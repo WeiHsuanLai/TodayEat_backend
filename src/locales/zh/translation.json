@@ -1,0 +1,6 @@
+{
+    "register_success": "註冊成功",
+    "validation_error": "{{field}} 資料格式錯誤",
+    "account_already_exists": "帳號已註冊",
+    "unknown_error": "未知錯誤"
+}
