@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import User from '../models/user'
 import mongoose from 'mongoose';
 
+// 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
     return typeof error === 'object' &&
         error !== null &&
@@ -19,7 +20,7 @@ export const create = async (req: Request, res: Response): Promise<void> => {
         await User.create(req.body)
         res.status(StatusCodes.OK).json({
             success: true,
-            message: ''
+            message: req.t('register_success')
         })
     } catch (err) {
         // 資料驗證錯誤
@@ -29,6 +30,7 @@ export const create = async (req: Request, res: Response): Promise<void> => {
                 success: false,
                 message: req.t('validation_error', { field: key })
             });
+            return;
         } 
         // 帳號重複
         else if (isMongoServerError(err)) {
@@ -36,6 +38,7 @@ export const create = async (req: Request, res: Response): Promise<void> => {
                 success: false,
                 message: req.t('account_already_exists')
             });
+            return;
         }
         // 未知錯誤
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
