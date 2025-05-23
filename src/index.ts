@@ -38,13 +38,14 @@ app.use(helmet());
 // routes
 app.use('/user', routerUser);
 
+// 測試key
 app.get('/test', (req, res) => {
   res.send(req.t('test_key'));
 });
 
 // 以上請求都沒有就進入
 app.use((req, res) => {
-    console.warn(`[重導向] ${req.method} ${req.originalUrl} → 外部網址`);
+    console.warn(`未知請求將導向外部網址`);
     res.redirect('https://www.youtube.com/watch?v=IxX_QHay02M');
 });
 
