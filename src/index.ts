@@ -1,19 +1,19 @@
 import 'dotenv/config'; //自動載入 .env
 import express, { Request, Response, NextFunction } from 'express';
-import mongoSanitize from 'express-mongo-sanitize';
+import mongoSanitize from 'express-mongo-sanitize'; // 防止 NoSQL 注入
 import mongoose from 'mongoose';
-// import cors from 'cors';
-import { StatusCodes } from 'http-status-codes';
-import i18nMiddleware from './middleware/i18n';
-import routerUser from './routes/user';
-import helmet from 'helmet';
+// import cors from 'cors'; // 如有跨域需求可啟用
+import { StatusCodes } from 'http-status-codes'; // 提供標準 HTTP 狀態碼常數
+import i18nMiddleware from './middleware/i18n'; // 多語系中介層
+import routerUser from './routes/user'; // 使用者相關路由
+import helmet from 'helmet'; // 設定 HTTP 安全標頭
 
 const app = express();
 
-// middleware
+// middleware 中介層設定
 app.use(i18nMiddleware);
 app.use(express.json());
-app.use(mongoSanitize());
+app.use(mongoSanitize()); // 清除潛在的 MongoDB 查詢語法
 app.use(helmet());
 
 // routes
