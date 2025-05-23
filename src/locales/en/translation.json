@@ -1,6 +1,4 @@
 {
-    "register_success": "Registration successful",
-    "validation_error": "{{field}} is invalid",
-    "account_already_exists": "Account already exists",
-    "unknown_error": "Unknown error"
+    "unknown_error": "unknown_error",
+    "test_key":"test_key"
 }

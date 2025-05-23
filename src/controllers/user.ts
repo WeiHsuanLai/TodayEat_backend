@@ -20,15 +20,14 @@ export const create = async (req: Request, res: Response): Promise<void> => {
         await User.create(req.body)
         res.status(StatusCodes.OK).json({
             success: true,
-            message: req.t('register_success')
+            message: 'register_success'
         })
     } catch (err) {
         // 資料驗證錯誤
         if (err instanceof mongoose.Error.ValidationError) {
-            const key = Object.keys(err.errors)[0];
             res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: req.t('validation_error', { field: key })
+                message: 'validation_error'
             });
             return;
         } 
@@ -36,14 +35,14 @@ export const create = async (req: Request, res: Response): Promise<void> => {
         else if (isMongoServerError(err)) {
             res.status(StatusCodes.CONFLICT).json({
                 success: false,
-                message: req.t('account_already_exists')
+                message: 'account_already_exists'
             });
             return;
         }
         // 未知錯誤
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             success: false,
-            message: req.t('unknown_error')
+            message: 'unknown_error'
         });
     }
 }

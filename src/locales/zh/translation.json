@@ -1,6 +1,4 @@
 {
-    "register_success": "註冊成功",
-    "validation_error": "{{field}} 資料格式錯誤",
-    "account_already_exists": "帳號已註冊",
-    "unknown_error": "未知錯誤"
+    "unknown_error": "發生未知錯誤，請稍後再試",
+    "test_key":"測試鑰匙"
 }
