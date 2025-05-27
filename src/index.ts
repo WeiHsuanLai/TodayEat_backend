@@ -2,7 +2,7 @@ import 'dotenv/config'; //自動載入 .env
 import express, { Request, Response, NextFunction,RequestHandler  } from 'express';
 import mongoSanitize from 'express-mongo-sanitize'; // 防止 NoSQL 注入
 import mongoose from 'mongoose';
-// import cors from 'cors'; // 如有跨域需求可啟用
+import cors from 'cors'; // 如有跨域需求可啟用
 import { StatusCodes } from 'http-status-codes'; // 提供標準 HTTP 狀態碼常數
 import i18nMiddleware from './middleware/i18n'; // 多語系中介層
 import routerUser from './routes/user'; // 使用者相關路由
@@ -11,18 +11,12 @@ import helmet from 'helmet'; // 設定 HTTP 安全標頭
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
   try {
-    // 處理 body
     if (req.body) {
       req.body = mongoSanitize.sanitize(req.body);
     }
-
-    // 處理 params
     if (req.params) {
       req.params = mongoSanitize.sanitize(req.params);
     }
-
-    // ✅ 不處理 req.query（避免錯誤）
-
     next();
   } catch (err) {
     next(err);
@@ -31,6 +25,18 @@ const safeMongoSanitize: RequestHandler = (req, res, next) => {
 
 // middleware 中介層設定
 app.use(i18nMiddleware);
+app.use(cors({
+  // origin = 請求的來源
+  // callback = 錯誤, 是否允許
+  origin(origin, callback){
+    if(origin == undefined || ['github.io','localhost','127.0.0.1'].includes(origin)){
+      callback(null,true)
+    }else{
+      callback(new Error('CORS'), false)
+    }
+  }
+}))
+
 app.use(express.json());
 app.use(safeMongoSanitize); // 清除潛在的 MongoDB 查詢語法
 app.use(helmet());

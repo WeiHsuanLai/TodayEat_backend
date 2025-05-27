@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { RequestHandler  } from 'express';
 import { StatusCodes } from 'http-status-codes'
 import User from '../models/user'
 import mongoose from 'mongoose';
@@ -14,7 +14,7 @@ function isMongoServerError(error: unknown): error is { name: string; code: numb
 }
 
 // 接收使用者傳入資料
-export const create = async (req: Request, res: Response): Promise<void> => {
+export const create: RequestHandler = async (req, res) => {
     // 若新增成功回傳 JSON
     try {
         await User.create(req.body)
