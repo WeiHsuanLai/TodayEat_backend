@@ -26,16 +26,17 @@ const safeMongoSanitize: RequestHandler = (req, res, next) => {
 // middleware 中介層設定
 app.use(i18nMiddleware);
 app.use(cors({
-  // origin = 請求的來源
-  // callback = 錯誤, 是否允許
-  origin(origin, callback){
-    if(origin == undefined || ['github.io','localhost','127.0.0.1'].includes(origin)){
-      callback(null,true)
-    }else{
-      callback(new Error('CORS'), false)
+  origin(origin, callback) {
+    const allowlist = ['http://localhost:9000', 'http://127.0.0.1:3000', 'https://WeiHsuanLai.github.io'];
+    if (!origin || allowlist.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn('❌ 被擋下的跨域來源:', origin);
+      callback(null, false); // ❗ 不要丟 Error
     }
-  }
-}))
+  },
+  optionsSuccessStatus: 200 // 🔧 修復舊瀏覽器對 204 的兼容性問題
+}));
 
 app.use(express.json());
 app.use(safeMongoSanitize); // 清除潛在的 MongoDB 查詢語法
@@ -47,6 +48,7 @@ app.use('/user', routerUser);
 // 測試key
 app.get('/test', (req, res) => {
   res.send(req.t('test_key'));
+  console.log("測試成功");
 });
 
 // 以上請求都沒有就進入
