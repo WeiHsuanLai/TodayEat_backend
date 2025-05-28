@@ -39,6 +39,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(safeMongoSanitize); // 清除潛在的 MongoDB 查詢語法
 app.use(helmet());
 
