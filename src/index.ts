@@ -1,3 +1,7 @@
+if (process.env.CLEAR) {
+  console.clear();
+}
+
 import 'dotenv/config'; //自動載入 .env
 import express, { Request, Response, NextFunction,RequestHandler  } from 'express';
 import mongoSanitize from 'express-mongo-sanitize'; // 防止 NoSQL 注入

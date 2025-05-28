@@ -21,11 +21,20 @@ function isMongoServerError(error: unknown): error is { name: string; code: numb
 export const create: RequestHandler = async (req, res) => {
     console.log('收到的 req.body:', req.body);
     const errors = validationResult(req);
+    
     if (!errors.isEmpty()) {
         res.status(400).json({
             success: false,
             message: '欄位驗證錯誤',
             errors: errors.array(),
+        });
+        return
+    }
+
+    if (req.body.password.length > 20) {
+        res.status(400).json({
+            success: false,
+            message: '密碼長度不能超過 20 字元',
         });
         return
     }
@@ -84,8 +93,19 @@ export const login: RequestHandler = async (req, res)=> {
         const token = jwt.sign(
             { id: user._id, account: user.account, role: user.role },
             process.env.JWT_SECRET || 'secret',
-            { expiresIn: '10s' }
+            { expiresIn: '60s' }
         );
+
+        if (!Array.isArray(user.tokens)) {
+            user.tokens = [];
+        }
+
+        if (user.tokens.length >= 5) {
+            user.tokens.shift();
+        }
+        // 🟡 儲存 token 到 tokens 陣列中
+        user.tokens.push(token);
+        await user.save(); // ⬅️ 儲存回資料庫
 
         res.json({
             success: true,
@@ -96,7 +116,8 @@ export const login: RequestHandler = async (req, res)=> {
 
         const roleLabel = user.role === UserRole.ADMIN ? '管理員' :
                           user.role === UserRole.USER ? '一般會員' : '未知角色';
-        console.log(`✅ 使用者登入：帳號=${user.account}，身分=${roleLabel}`);
+        console.log(`✅ 使用者登入：帳號=${user.account}，身分=${roleLabel}，JWT Token = ${token}`);
+        return
 
     } catch (err) {
         console.error('❌ 登入發生錯誤:', err);

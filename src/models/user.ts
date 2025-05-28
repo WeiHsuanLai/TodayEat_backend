@@ -35,7 +35,6 @@ const schema = new Schema(
             type:String,
             required:[true,'使用者密碼必填'],
             minlength:[4,'使用者密碼長度不符'],
-            maxlength:[20,'使用者密碼長度不符'],
         },
         tokens:{
             type:[String],
