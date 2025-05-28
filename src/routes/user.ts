@@ -2,6 +2,7 @@ import express from 'express';
 import { create } from '../controllers/user';
 import { body } from 'express-validator';
 import { login } from '../controllers/user';
+import { authMiddleware } from '../middleware/auth';
 const router = express.Router();
 
 router.post(
@@ -20,6 +21,14 @@ router.post('/login', login);
 
 router.get('/', (req, res) => {
     res.send('Hello from user route');
+});
+
+router.get('/me', authMiddleware, (req, res) => {
+    res.json({
+        success: true,
+        message: '你已登入',
+        user: req.user,
+    });
 });
 
 export default router; 

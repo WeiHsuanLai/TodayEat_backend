@@ -1,7 +1,7 @@
-import 'express';
+import 'express-serve-static-core';
 
-declare module 'express' {
-    export interface Request {
-        __(key: string, ...args: unknown[]): string;
+declare module 'express-serve-static-core' {
+    interface Request {
+        __: (key: string, ...args: unknown[]) => string;
     }
 }

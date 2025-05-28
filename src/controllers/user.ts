@@ -1,9 +1,10 @@
-import { RequestHandler  } from 'express';
-import { StatusCodes } from 'http-status-codes'
-import User from '../models/user'
-import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import { RequestHandler  } from 'express'; //驗證型別
+import { StatusCodes } from 'http-status-codes' //回傳 HTTP 狀態碼
+import User from '../models/user' //定義的 Mongoose 模型
+import mongoose from 'mongoose'; //辨識 ValidationError 等資料錯誤
+import jwt from 'jsonwebtoken'; //建立登入的 token
+import bcrypt from 'bcryptjs'; //加密驗證
+import { validationResult } from 'express-validator';
 
 // 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
@@ -18,6 +19,15 @@ function isMongoServerError(error: unknown): error is { name: string; code: numb
 // 建立帳號
 export const create: RequestHandler = async (req, res) => {
     console.log('收到的 req.body:', req.body);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        res.status(400).json({
+            success: false,
+            message: '欄位驗證錯誤',
+            errors: errors.array(),
+        });
+        return
+    }
 
     try {
         const newUser = await User.create(req.body); // ✅ 建立新使用者
