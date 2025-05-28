@@ -26,11 +26,17 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const token = authHeader.split(' ')[1];
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as DecodedUser;
-        req.user = decoded;
-        next();
-    } catch (err) {
-        console.error('[發生錯誤]', err);
-        res.status(401).json({ success: false, message: 'token 驗證失敗' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as DecodedUser;
+    req.user = decoded;
+    next();
+    } catch (err: unknown) {
+        console.error('[token 錯誤]', err);
+
+        if (err instanceof jwt.TokenExpiredError) {
+            res.status(401).json({ success: false, message: 'token 已過期，請重新登入' });
+        } else {
+            res.status(401).json({ success: false, message: 'token 驗證失敗' });
+        }
     }
+
 };
