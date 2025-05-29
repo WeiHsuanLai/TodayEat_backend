@@ -1,9 +1,9 @@
-import { RequestHandler  } from 'express'; //驗證型別
-import { StatusCodes } from 'http-status-codes' //回傳 HTTP 狀態碼
-import User from '../models/user' //定義的 Mongoose 模型
-import mongoose from 'mongoose'; //辨識 ValidationError 等資料錯誤
-import jwt, { JwtPayload } from 'jsonwebtoken'; //建立登入的 token
-import bcrypt from 'bcryptjs'; //加密驗證
+import { Request, Response } from 'express'; // 顯式指定 req, res 型別
+import { StatusCodes } from 'http-status-codes';
+import User from '../models/user';
+import mongoose from 'mongoose';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { validationResult } from 'express-validator';
 import UserRole from '../enums/UserRole';
 
@@ -18,17 +18,17 @@ function isMongoServerError(error: unknown): error is { name: string; code: numb
 }
 
 // 建立帳號
-export const create: RequestHandler = async (req, res) => {
+export const create = async (req: Request, res: Response) => {
     console.log('收到的 req.body:', req.body);
     const errors = validationResult(req);
-    
+
     if (!errors.isEmpty()) {
         res.status(400).json({
             success: false,
             message: '欄位驗證錯誤',
             errors: errors.array(),
         });
-        return
+        return;
     }
 
     if (req.body.password.length > 20) {
@@ -36,7 +36,7 @@ export const create: RequestHandler = async (req, res) => {
             success: false,
             message: '密碼長度不能超過 20 字元',
         });
-        return
+        return;
     }
 
     try {
@@ -46,7 +46,9 @@ export const create: RequestHandler = async (req, res) => {
             password: hashedPassword,
             role: req.body.role,
         });
+
         console.log('✅ 新使用者已建立:', newUser);
+
         res.status(StatusCodes.OK).json({
             success: true,
             message: 'register_success',
@@ -57,24 +59,22 @@ export const create: RequestHandler = async (req, res) => {
                 success: false,
                 message: 'validation_error',
             });
-            return;
         } else if (isMongoServerError(err)) {
             res.status(StatusCodes.CONFLICT).json({
                 success: false,
                 message: 'account_already_exists',
             });
-            return;
+        } else {
+            res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                message: 'unknown_error',
+            });
         }
-
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: 'unknown_error',
-        });
     }
 };
 
 // 登入
-export const login: RequestHandler = async (req, res)=> {
+export const login = async (req: Request, res: Response) => {
     try {
         const { account, password } = req.body;
 
@@ -112,11 +112,11 @@ export const login: RequestHandler = async (req, res)=> {
         }
 
         if (user.tokens.length >= 5) {
-            user.tokens.shift();
+            user.tokens.shift(); // 保留最新 5 筆 token
         }
-        // 🟡 儲存 token 到 tokens 陣列中
+
         user.tokens.push(token);
-        await user.save(); // ⬅️ 儲存回資料庫
+        await user.save();
 
         res.json({
             success: true,
@@ -128,8 +128,6 @@ export const login: RequestHandler = async (req, res)=> {
         const roleLabel = user.role === UserRole.ADMIN ? '管理員' :
                           user.role === UserRole.USER ? '一般會員' : '未知角色';
         console.log(`✅ 使用者登入：帳號=${user.account}，身分=${roleLabel}，JWT Token = ${token}`);
-        return
-
     } catch (err) {
         console.error('❌ 登入發生錯誤:', err);
         res.status(500).json({ success: false, message: '伺服器錯誤' });
@@ -137,22 +135,32 @@ export const login: RequestHandler = async (req, res)=> {
 };
 
 // 登出
-export const logout: RequestHandler = async (req, res) => {
+export const logout = async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(' ')[1];
+
     if (!token || !req.user) {
         res.status(400).json({ success: false, message: '無效的請求' });
-        return
+        return;
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user) {
-        res.status(404).json({ success: false, message: '找不到使用者' });
-        return
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            res.status(404).json({ success: false, message: '找不到使用者' });
+            return;
+        }
+
+        const beforeCount = user.tokens.length;
+        user.tokens = user.tokens.filter(t => t !== token);
+        await user.save();
+
+        const removed = beforeCount - user.tokens.length;
+        res.json({
+            success: true,
+            message: removed ? '已登出' : 'Token 已不存在（可能已被移除）'
+        });
+    } catch (err) {
+        console.error('🔴 登出錯誤:', err);
+        res.status(500).json({ success: false, message: '登出失敗' });
     }
-
-    // 移除該 token
-    user.tokens = user.tokens.filter(t => t !== token);
-    await user.save();
-
-    res.json({ success: true, message: '已登出' });
 };
