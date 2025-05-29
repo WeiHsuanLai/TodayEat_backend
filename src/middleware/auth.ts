@@ -26,9 +26,9 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const token = authHeader.split(' ')[1];
 
     try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as DecodedUser;
-    req.user = decoded;
-    next();
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as DecodedUser;
+        req.user = decoded;
+        next();
     } catch (err: unknown) {
         console.error('[token 錯誤]', err);
 

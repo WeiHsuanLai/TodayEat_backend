@@ -28,6 +28,7 @@ async function createAdmin() {
         account,
         password,
         role: UserRole.ADMIN, // 指定為管理員
+        tokens: []
     });
 
     console.log(`✅ 管理員帳號 "${account}" 建立完成`);

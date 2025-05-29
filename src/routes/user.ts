@@ -1,5 +1,5 @@
 import express from 'express';
-import { create } from '../controllers/user';
+import { create, logout } from '../controllers/user';
 import { body } from 'express-validator';
 import { login } from '../controllers/user';
 import { authMiddleware } from '../middleware/auth';
@@ -18,6 +18,8 @@ router.post(
 );
 
 router.post('/login', login);
+
+router.post('/logout', authMiddleware, logout);
 
 router.get('/', (req, res) => {
     res.send('Hello from user route');

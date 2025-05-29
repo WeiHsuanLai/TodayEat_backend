@@ -5,12 +5,15 @@ if (process.env.CLEAR) {
 import 'dotenv/config'; //自動載入 .env
 import express, { Request, Response, NextFunction,RequestHandler  } from 'express';
 import mongoSanitize from 'express-mongo-sanitize'; // 防止 NoSQL 注入
-import mongoose from 'mongoose';
+import mongoose,{ Types } from 'mongoose';
 import cors from 'cors'; // 如有跨域需求可啟用
 import { StatusCodes } from 'http-status-codes'; // 提供標準 HTTP 狀態碼常數
 import i18nMiddleware from './middleware/i18n'; // 多語系中介層
 import routerUser from './routes/user'; // 使用者相關路由
 import helmet from 'helmet'; // 設定 HTTP 安全標頭
+import cron from 'node-cron';
+import jwt,{ JwtPayload } from 'jsonwebtoken';
+import User from './models/user';
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -26,6 +29,52 @@ const safeMongoSanitize: RequestHandler = (req, res, next) => {
     next(err);
   }
 };
+
+cron.schedule('0 */8 * * *', async () => {
+  console.log('🕒 cron 任務開始執行');
+  try {
+
+  interface RawUserWithTokens {
+    _id: Types.ObjectId;
+    account: string;
+    tokens: string[];
+  }
+
+  const usersWithTokens = await User.collection
+    .find<RawUserWithTokens>({ tokens: { $exists: true, $ne: [] } })
+    .toArray();
+
+  console.log('🟡 查詢 tokens 不為空的使用者筆數：', usersWithTokens.length);
+  for (const user of usersWithTokens) {
+    const originalTokens = user.tokens;
+    const now = Math.floor(Date.now() / 1000);
+      
+    const validTokens = originalTokens.filter((tokenStr: string) => {
+    try {
+      const decoded = jwt.verify(tokenStr, process.env.JWT_SECRET || 'secret') as JwtPayload;
+      console.log(`🔍 token exp: ${decoded.exp}, now: ${now}`);
+      return decoded.exp && decoded.exp > now;
+    } catch {
+      console.warn(`⚠️ 無效或過期 token 被移除`);
+      return false;
+    }
+  });
+
+  if (validTokens.length !== originalTokens.length) {
+    await User.updateOne(
+      { _id: user._id },
+      { $set: { tokens: validTokens } }
+    );
+    console.log(`🕒 cron：已更新 ${user.account}，移除 ${originalTokens.length - validTokens.length} 筆 token`);
+  }
+}
+
+  } catch (err) {
+    console.error('❌ cron 任務執行失敗：', err);
+  }
+});
+
+
 
 // middleware 中介層設定
 app.use(i18nMiddleware);

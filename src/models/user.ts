@@ -38,6 +38,7 @@ const schema = new Schema(
         },
         tokens:{
             type:[String],
+            default: []
         },
         cart:{
             type:[cartSchema]

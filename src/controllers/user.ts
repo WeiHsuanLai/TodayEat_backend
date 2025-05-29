@@ -2,7 +2,7 @@ import { RequestHandler  } from 'express'; //驗證型別
 import { StatusCodes } from 'http-status-codes' //回傳 HTTP 狀態碼
 import User from '../models/user' //定義的 Mongoose 模型
 import mongoose from 'mongoose'; //辨識 ValidationError 等資料錯誤
-import jwt from 'jsonwebtoken'; //建立登入的 token
+import jwt, { JwtPayload } from 'jsonwebtoken'; //建立登入的 token
 import bcrypt from 'bcryptjs'; //加密驗證
 import { validationResult } from 'express-validator';
 import UserRole from '../enums/UserRole';
@@ -84,6 +84,17 @@ export const login: RequestHandler = async (req, res)=> {
             return;
         }
 
+        // ✅ 清除已過期的 token
+        const now = Math.floor(Date.now() / 1000);
+        user.tokens = user.tokens.filter(tokenStr => {
+            try {
+                const decoded = jwt.verify(tokenStr, process.env.JWT_SECRET || 'secret') as JwtPayload;
+                return decoded.exp !== undefined && decoded.exp > now;
+            } catch {
+                return false;
+            }
+        });
+
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
             res.status(401).json({ success: false, message: '密碼錯誤' });
@@ -93,7 +104,7 @@ export const login: RequestHandler = async (req, res)=> {
         const token = jwt.sign(
             { id: user._id, account: user.account, role: user.role },
             process.env.JWT_SECRET || 'secret',
-            { expiresIn: '60s' }
+            { expiresIn: '8h' }
         );
 
         if (!Array.isArray(user.tokens)) {
@@ -123,4 +134,25 @@ export const login: RequestHandler = async (req, res)=> {
         console.error('❌ 登入發生錯誤:', err);
         res.status(500).json({ success: false, message: '伺服器錯誤' });
     }
+};
+
+// 登出
+export const logout: RequestHandler = async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token || !req.user) {
+        res.status(400).json({ success: false, message: '無效的請求' });
+        return
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) {
+        res.status(404).json({ success: false, message: '找不到使用者' });
+        return
+    }
+
+    // 移除該 token
+    user.tokens = user.tokens.filter(t => t !== token);
+    await user.save();
+
+    res.json({ success: true, message: '已登出' });
 };
