@@ -2,7 +2,7 @@
 
 function getCallerLocation(): string {
   const err = new Error();
-  const stackLine = (err.stack || '').split('\n')[2] || '';
+  const stackLine = (err.stack || '').split('\n')[3] || '';
   const match = stackLine.match(/(?:\()?(.*):(\d+):(\d+)(?:\))?/);
   return match ? `${match[1]}:${match[2]}` : 'unknown';
 }
@@ -16,13 +16,13 @@ function log(...args: unknown[]) {
 function logWarn(...args: unknown[]) {
   const time = new Date().toISOString();
   const location = getCallerLocation();
-  logWarn(`[${time}] [WARN @ ${location}]`, ...args);
+  console.warn(`[${time}] [WARN @ ${location}]`, ...args);
 }
 
 function logError(...args: unknown[]) {
   const time = new Date().toISOString();
   const location = getCallerLocation();
-  logError(`[${time}] [ERROR @ ${location}]`, ...args);
+  console.error(`[${time}] [ERROR @ ${location}]`, ...args);
 }
 
 // 👉 綁到 global
