@@ -63,23 +63,23 @@ export const create = async (req: Request, res: Response) => {
 
         res.status(StatusCodes.OK).json({
             success: true,
-            message: 'register_success',
+            message: '註冊成功',
         });
     } catch (err) {
         if (err instanceof mongoose.Error.ValidationError) {
             res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: 'validation_error',
+                message: '欄位驗證錯誤',
             });
         } else if (isMongoServerError(err)) {
             res.status(StatusCodes.CONFLICT).json({
                 success: false,
-                message: 'account_already_exists',
+                message: '此帳號已存在',
             });
         } else {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 success: false,
-                message: 'unknown_error',
+                message: '註冊失敗，請稍後再試',
             });
         }
     }
