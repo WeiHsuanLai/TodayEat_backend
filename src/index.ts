@@ -16,6 +16,7 @@ import cron from 'node-cron'; // 設定排程任務
 import jwt,{ JwtPayload } from 'jsonwebtoken';
 import User from './models/user'; // 引入 mongodb 模型
 import i18n from 'i18next';
+import { formatUnixTimestamp } from './utils/formatTime';
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -54,7 +55,12 @@ cron.schedule('0 */8 * * *', async () => {
     const validTokens = originalTokens.filter((tokenStr: string) => {
     try {
       const decoded = jwt.verify(tokenStr, process.env.JWT_SECRET || 'secret') as JwtPayload;
-      log(`🔍 token exp: ${decoded.exp}, now: ${now}`);
+      const expFormatted = formatUnixTimestamp(decoded.exp);
+      const nowFormatted = formatUnixTimestamp(now);
+      log(i18n.t('🔍 token 有效期限：{{exp}}，當前時間：{{now}}', {
+        exp: expFormatted,
+        now: nowFormatted
+      }));
       return decoded.exp && decoded.exp > now;
     } catch {
       logWarn(i18n.t('⚠️ 無效或過期 token 被移除'));

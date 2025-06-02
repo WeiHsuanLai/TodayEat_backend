@@ -12,5 +12,6 @@
     "🕒 cron 任務開始執行":"🕒 cron job started execution",
     "🟡 查詢 tokens 不為空的使用者筆數：":"🟡 Number of users with non-empty tokens found:",
     "⚠️ 無效或過期 token 被移除":"⚠️ Invalid or expired token has been removed",
-    "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token": "🕒 cron: Updated {{account}}, removed {{count}} token(s)"
+    "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token": "🕒 cron: Updated {{account}}, removed {{count}} token(s)",
+    "🔍 token 有效期限：{{exp}}，當前時間：{{now}}": "🔍 token exp: {{exp}}，now: {{now}}"
 }

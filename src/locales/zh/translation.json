@@ -12,5 +12,6 @@
     "🕒 cron 任務開始執行":"🕒 cron 任務開始執行",
     "🟡 查詢 tokens 不為空的使用者筆數：":"🟡 查詢 tokens 不為空的使用者筆數：",
     "⚠️ 無效或過期 token 被移除":"⚠️ 無效或過期 token 被移除",
-    "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token": "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token"
+    "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token": "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token",
+    "🔍 token 有效期限：{{exp}}，當前時間：{{now}}": "🔍 token 有效期限：{{exp}}，當前時間：{{now}}"
 }
