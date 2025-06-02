@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from '../src/models/user';
 import UserRole from '../src/enums/UserRole';
-import { log } from 'console';
+import '../src/utils/logger';
 
 // 載入 .env 設定
 dotenv.config();
