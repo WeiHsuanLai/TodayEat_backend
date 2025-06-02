@@ -40,23 +40,25 @@ export const create = async (req: Request, res: Response) => {
     }
 
     // 禁用 api 來註冊管理員帳號
-    const role = Number(req.body.role) || UserRole.USER;
+    const rawRole = req.body.role;
+    const role = rawRole !== undefined ? Number(rawRole) : UserRole.USER;
     if (role === UserRole.ADMIN) {
-        return res.status(403).json({
+        res.status(403).json({
             success: false,
             message: '禁止註冊管理員帳號',
         });
+        return;
     }
 
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
         const newUser = await User.create({
             account: req.body.account,
-            password: hashedPassword,
+            password: req.body.password,
             role,
         });
 
         console.log('✅ 新使用者已建立:', newUser);
+        console.log('🆕 註冊原始密碼:', req.body.password, '| 長度:', req.body.password.length);
 
         res.status(StatusCodes.OK).json({
             success: true,
@@ -103,6 +105,11 @@ export const login = async (req: Request, res: Response) => {
                 return false;
             }
         });
+
+        console.log('👉 傳入密碼:', password);
+        console.log('🔐 資料庫密碼:', user.password);
+        const testCompare = await bcrypt.compare(password, user.password);
+        console.log('🧪 手動 bcrypt.compare():', testCompare);
 
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
