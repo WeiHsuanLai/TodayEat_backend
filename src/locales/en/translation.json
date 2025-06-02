@@ -8,5 +8,9 @@
     "❌ 缺少環境變數 DB_URL":"❌ Missing environment variable: DB_URL",
     "✅ 資料庫連線成功":"✅ 資料庫連線成功",
     "🚀 伺服器啟動：port ":"🚀 server_started ",
-    "❌ 資料庫連線失敗：":"❌ Failed to connect to the database:"
+    "❌ 資料庫連線失敗：":"❌ Failed to connect to the database:",
+    "🕒 cron 任務開始執行":"🕒 cron job started execution",
+    "🟡 查詢 tokens 不為空的使用者筆數：":"🟡 Number of users with non-empty tokens found:",
+    "⚠️ 無效或過期 token 被移除":"⚠️ Invalid or expired token has been removed",
+    "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token": "🕒 cron: Updated {{account}}, removed {{count}} token(s)"
 }

@@ -12,9 +12,9 @@ import { StatusCodes } from 'http-status-codes'; // 提供標準 HTTP 狀態碼�
 import i18nMiddleware from './middleware/i18n'; // 多語系中介層
 import routerUser from './routes/user'; // 使用者相關路由
 import helmet from 'helmet'; // 設定 HTTP 安全標頭
-import cron from 'node-cron';
+import cron from 'node-cron'; // 設定排程任務
 import jwt,{ JwtPayload } from 'jsonwebtoken';
-import User from './models/user';
+import User from './models/user'; // 引入 mongodb 模型
 import i18n from 'i18next';
 
 const app = express();
@@ -33,7 +33,7 @@ const safeMongoSanitize: RequestHandler = (req, res, next) => {
 };
 
 cron.schedule('0 */8 * * *', async () => {
-  log('🕒 cron 任務開始執行');
+  log(i18n.t('🕒 cron 任務開始執行'));
   try {
 
   interface RawUserWithTokens {
@@ -46,7 +46,7 @@ cron.schedule('0 */8 * * *', async () => {
     .find<RawUserWithTokens>({ tokens: { $exists: true, $ne: [] } })
     .toArray();
 
-  log('🟡 查詢 tokens 不為空的使用者筆數：', usersWithTokens.length);
+  log(i18n.t('🟡 查詢 tokens 不為空的使用者筆數：'), usersWithTokens.length);
   for (const user of usersWithTokens) {
     const originalTokens = user.tokens;
     const now = Math.floor(Date.now() / 1000);
@@ -57,7 +57,7 @@ cron.schedule('0 */8 * * *', async () => {
       log(`🔍 token exp: ${decoded.exp}, now: ${now}`);
       return decoded.exp && decoded.exp > now;
     } catch {
-      logWarn(`⚠️ 無效或過期 token 被移除`);
+      logWarn(i18n.t('⚠️ 無效或過期 token 被移除'));
       return false;
     }
   });
@@ -67,7 +67,10 @@ cron.schedule('0 */8 * * *', async () => {
       { _id: user._id },
       { $set: { tokens: validTokens } }
     );
-    log(`🕒 cron：已更新 ${user.account}，移除 ${originalTokens.length - validTokens.length} 筆 token`);
+    log(i18n.t('🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token', {
+      account: user.account,
+      count: originalTokens.length - validTokens.length
+    }));
   }
 }
 
