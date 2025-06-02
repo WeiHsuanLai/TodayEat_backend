@@ -39,12 +39,21 @@ export const create = async (req: Request, res: Response) => {
         return;
     }
 
+    // 禁用 api 來註冊管理員帳號
+    const role = Number(req.body.role) || UserRole.USER;
+    if (role === UserRole.ADMIN) {
+        return res.status(403).json({
+            success: false,
+            message: '禁止註冊管理員帳號',
+        });
+    }
+
     try {
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         const newUser = await User.create({
             account: req.body.account,
             password: hashedPassword,
-            role: req.body.role,
+            role,
         });
 
         console.log('✅ 新使用者已建立:', newUser);
@@ -107,15 +116,17 @@ export const login = async (req: Request, res: Response) => {
             { expiresIn: '8h' }
         );
 
-        if (!Array.isArray(user.tokens)) {
-            user.tokens = [];
-        }
+        // if (!Array.isArray(user.tokens)) {
+        //     user.tokens = [];
+        // }
 
-        if (user.tokens.length >= 5) {
-            user.tokens.shift(); // 保留最新 5 筆 token
-        }
+        // if (user.tokens.length >= 5) {
+        //     user.tokens.shift(); // 保留最新 5 筆 token
+        // }
 
-        user.tokens.push(token);
+        // user.tokens.push(token);
+        user.tokens = [token];
+
         await user.save();
 
         res.json({
