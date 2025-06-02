@@ -102,7 +102,7 @@ app.use('/user', routerUser);
 
 // 測試key
 app.get('/test', (req, res) => {
-  res.send(req.t('test_key'));
+  res.send(req.t('測試鑰匙1234'));
   log("測試成功");
 });
 
@@ -119,7 +119,7 @@ function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunc
     logError('[全域錯誤]', err);
 
     const fallback = '未知錯誤';
-    const message = typeof req.t === 'function' ? req.t('unknown_error') : fallback;
+    const message = typeof req.t === 'function' ? req.t('發生未知錯誤，請稍後再試') : fallback;
 
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         success: false,
