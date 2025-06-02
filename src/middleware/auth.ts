@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import User from '../models/user';
+import { log } from 'console';
 
 interface DecodedUser {
     id: string;
@@ -27,6 +29,16 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as DecodedUser;
+        const user = await User.findById(decoded.id);
+        if (!user || !Array.isArray(user.tokens) || !user.tokens.includes(token)) {
+            log(`驗證失敗：user=${!!user} tokenInList=${user?.tokens.includes(token)}`);
+            res.status(401).json({
+                success: false,
+                message: '登入已失效',
+                reason: 'invalid_token',
+            });
+            return
+        }
         req.user = decoded;
         next();
     } catch (err: unknown) {

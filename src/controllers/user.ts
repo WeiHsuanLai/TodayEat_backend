@@ -19,7 +19,7 @@ function isMongoServerError(error: unknown): error is { name: string; code: numb
 
 // 建立帳號
 export const create = async (req: Request, res: Response) => {
-    console.log('收到的 req.body:', req.body);
+    log('收到的 req.body:', req.body);
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -57,8 +57,8 @@ export const create = async (req: Request, res: Response) => {
             role,
         });
 
-        console.log('✅ 新使用者已建立:', newUser);
-        console.log('🆕 註冊原始密碼:', req.body.password, '| 長度:', req.body.password.length);
+        log('✅ 新使用者已建立:', newUser);
+        log('🆕 註冊原始密碼:', req.body.password, '| 長度:', req.body.password.length);
 
         res.status(StatusCodes.OK).json({
             success: true,
@@ -106,11 +106,6 @@ export const login = async (req: Request, res: Response) => {
             }
         });
 
-        console.log('👉 傳入密碼:', password);
-        console.log('🔐 資料庫密碼:', user.password);
-        const testCompare = await bcrypt.compare(password, user.password);
-        console.log('🧪 手動 bcrypt.compare():', testCompare);
-
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
             res.status(401).json({ success: false, message: '密碼錯誤' });
@@ -145,7 +140,7 @@ export const login = async (req: Request, res: Response) => {
 
         const roleLabel = user.role === UserRole.ADMIN ? '管理員' :
                           user.role === UserRole.USER ? '一般會員' : '未知角色';
-        console.log(`✅ 使用者登入：帳號=${user.account}，身分=${roleLabel}，JWT Token = ${token}`);
+        log(`✅ 使用者登入：帳號=${user.account}，身分=${roleLabel}`);
     } catch (err) {
         console.error('❌ 登入發生錯誤:', err);
         res.status(500).json({ success: false, message: '伺服器錯誤' });

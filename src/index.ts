@@ -1,3 +1,4 @@
+import './utils/logger';
 if (process.env.CLEAR) {
   console.clear();
 }
@@ -31,7 +32,7 @@ const safeMongoSanitize: RequestHandler = (req, res, next) => {
 };
 
 cron.schedule('0 */8 * * *', async () => {
-  console.log('🕒 cron 任務開始執行');
+  log('🕒 cron 任務開始執行');
   try {
 
   interface RawUserWithTokens {
@@ -44,7 +45,7 @@ cron.schedule('0 */8 * * *', async () => {
     .find<RawUserWithTokens>({ tokens: { $exists: true, $ne: [] } })
     .toArray();
 
-  console.log('🟡 查詢 tokens 不為空的使用者筆數：', usersWithTokens.length);
+  log('🟡 查詢 tokens 不為空的使用者筆數：', usersWithTokens.length);
   for (const user of usersWithTokens) {
     const originalTokens = user.tokens;
     const now = Math.floor(Date.now() / 1000);
@@ -52,7 +53,7 @@ cron.schedule('0 */8 * * *', async () => {
     const validTokens = originalTokens.filter((tokenStr: string) => {
     try {
       const decoded = jwt.verify(tokenStr, process.env.JWT_SECRET || 'secret') as JwtPayload;
-      console.log(`🔍 token exp: ${decoded.exp}, now: ${now}`);
+      log(`🔍 token exp: ${decoded.exp}, now: ${now}`);
       return decoded.exp && decoded.exp > now;
     } catch {
       console.warn(`⚠️ 無效或過期 token 被移除`);
@@ -65,7 +66,7 @@ cron.schedule('0 */8 * * *', async () => {
       { _id: user._id },
       { $set: { tokens: validTokens } }
     );
-    console.log(`🕒 cron：已更新 ${user.account}，移除 ${originalTokens.length - validTokens.length} 筆 token`);
+    log(`🕒 cron：已更新 ${user.account}，移除 ${originalTokens.length - validTokens.length} 筆 token`);
   }
 }
 
@@ -102,7 +103,7 @@ app.use('/user', routerUser);
 // 測試key
 app.get('/test', (req, res) => {
   res.send(req.t('test_key'));
-  console.log("測試成功");
+  log("測試成功");
 });
 
 // 以上請求都沒有就進入
@@ -140,10 +141,10 @@ async function startServer() {
     try {
         mongoose.set('sanitizeFilter', true);
         await mongoose.connect(DB_URL);
-        console.log('✅ 資料庫連線成功');
+        log('✅ 資料庫連線成功');
 
         app.listen(PORT, () => {
-            console.log(`🚀 伺服器啟動：port ${PORT}`);
+            log(`🚀 伺服器啟動：port ${PORT}`);
         });
     } catch (err) {
         console.error('❌ 資料庫連線失敗：', err);

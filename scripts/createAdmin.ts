@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from '../src/models/user';
 import UserRole from '../src/enums/UserRole';
+import { log } from 'console';
 
 // 載入 .env 設定
 dotenv.config();
@@ -19,7 +20,7 @@ async function createAdmin() {
 
     const exists = await User.findOne({ account });
     if (exists) {
-        console.log(`⚠️ 管理員帳號 "${account}" 已存在`);
+        log(`⚠️ 管理員帳號 "${account}" 已存在`);
         await mongoose.disconnect();
         return;
     }
@@ -31,7 +32,7 @@ async function createAdmin() {
         tokens: []
     });
 
-    console.log(`✅ 管理員帳號 "${account}" 建立完成`);
+    log(`✅ 管理員帳號 "${account}" 建立完成`);
     await mongoose.disconnect();
 }
 
