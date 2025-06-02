@@ -59,7 +59,6 @@ export const create = async (req: Request, res: Response) => {
         });
 
         log('✅ 新使用者已建立:', newUser);
-        log('🆕 註冊原始密碼:', req.body.password, '| 長度:', req.body.password.length);
 
         res.status(StatusCodes.OK).json({
             success: true,
