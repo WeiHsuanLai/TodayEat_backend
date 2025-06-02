@@ -15,6 +15,7 @@ import helmet from 'helmet'; // 設定 HTTP 安全標頭
 import cron from 'node-cron';
 import jwt,{ JwtPayload } from 'jsonwebtoken';
 import User from './models/user';
+import i18n from 'i18next';
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -102,13 +103,13 @@ app.use('/user', routerUser);
 
 // 測試key
 app.get('/test', (req, res) => {
-  res.send(req.t('測試鑰匙1234'));
-  log("測試成功");
+  res.send(req.t('測試鑰匙'));
+  log(req.t("測試成功"));
 });
 
 // 以上請求都沒有就進入
 app.use((req, res) => {
-    logWarn(`未知請求將導向外部網址`);
+    logWarn(req.t('未知請求將導向外部網址'));
     res.redirect('https://www.youtube.com/watch?v=IxX_QHay02M');
 });
 
@@ -116,9 +117,9 @@ app.use((req, res) => {
 // ✅ 全域錯誤處理 middleware（一定要放在所有 route 後面）
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {
-    logError('[全域錯誤]', err);
+    logError(req.t('[全域錯誤]'), err);
 
-    const fallback = '未知錯誤';
+    const fallback = req.t('未知錯誤');
     const message = typeof req.t === 'function' ? req.t('發生未知錯誤，請稍後再試') : fallback;
 
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -135,19 +136,19 @@ async function startServer() {
     const DB_URL = process.env.DB_URL;
 
     if (!DB_URL) {
-        throw new Error('❌ 缺少環境變數 DB_URL');
+        throw new Error(i18n.t('❌ 缺少環境變數 DB_URL'));
     }
 
     try {
         mongoose.set('sanitizeFilter', true);
         await mongoose.connect(DB_URL);
-        log('✅ 資料庫連線成功');
-
+        log(i18n.t('✅ 資料庫連線成功'));
+        
         app.listen(PORT, () => {
-            log(`🚀 伺服器啟動：port ${PORT}`);
+            log(i18n.t('🚀 伺服器啟動：port ', { port: PORT }));
         });
     } catch (err) {
-        logError('❌ 資料庫連線失敗：', err);
+        logError(i18n.t('❌ 資料庫連線失敗：'), err);
         process.exit(1); // 強制關閉
     }
 }
