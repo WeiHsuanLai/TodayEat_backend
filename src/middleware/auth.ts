@@ -7,6 +7,8 @@ interface DecodedUser {
     id: string;
     account: string;
     role: number;
+    iat?: number;
+    exp?: number;
 }
 
 // 擴充 req 物件（TypeScript 用）

@@ -3,6 +3,7 @@ import { create, logout } from '../controllers/user';
 import { body } from 'express-validator';
 import { login } from '../controllers/user';
 import { authMiddleware } from '../middleware/auth';
+import { formatUnixTimestamp } from '../utils/formatTime';
 const router = express.Router();
 
 router.post(
@@ -27,10 +28,23 @@ router.get('/', (req, res) => {
 
 // 測試登入失效
 router.get('/me', authMiddleware, (req, res) => {
+    if (!req.user) {
+        res.status(401).json({ success: false, message: '尚未登入' });
+        return
+    }
+
+    const { id, account, role, iat, exp } = req.user;
+
     res.json({
         success: true,
         message: '你已登入',
-        user: req.user,
+        user: {
+            id,
+            account,
+            role,
+            iat: formatUnixTimestamp(iat), // 預設使用系統本地時間
+            exp: formatUnixTimestamp(exp),
+        }
     });
 });
 

@@ -1,11 +1,12 @@
 import { Request, Response } from 'express'; // 顯式指定 req, res 型別
-import { StatusCodes } from 'http-status-codes';
-import User from '../models/user';
+import { StatusCodes } from 'http-status-codes'; // HTTP 狀態碼
+import User from '../models/user'; // Mongoose 資料模型
 import mongoose from 'mongoose';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import { validationResult } from 'express-validator';
-import UserRole from '../enums/UserRole';
+import jwt, { JwtPayload } from 'jsonwebtoken'; // 產生與解析 JWT
+import bcrypt from 'bcryptjs'; //密碼雜湊與驗證
+import { validationResult } from 'express-validator'; // 驗證欄位
+import UserRole from '../enums/UserRole'; // 使用者權限定義
+import { formatUnixTimestamp } from '../utils/formatTime'; // 時間轉換工具
 
 // 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
@@ -87,8 +88,8 @@ export const create = async (req: Request, res: Response) => {
 // 登入
 export const login = async (req: Request, res: Response) => {
     try {
+        // 比對帳號
         const { account, password } = req.body;
-
         const user = await User.findOne({ account });
         if (!user) {
             res.status(401).json({ success: false, message: '帳號不存在' });
@@ -106,35 +107,34 @@ export const login = async (req: Request, res: Response) => {
             }
         });
 
+        // 比對密碼轉換
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
             res.status(401).json({ success: false, message: '密碼錯誤' });
             return;
         }
 
+        // 建立token
         const token = jwt.sign(
             { id: user._id, account: user.account, role: user.role },
             process.env.JWT_SECRET || 'secret',
             { expiresIn: '8h' }
         );
 
-        // if (!Array.isArray(user.tokens)) {
-        //     user.tokens = [];
-        // }
-
-        // if (user.tokens.length >= 5) {
-        //     user.tokens.shift(); // 保留最新 5 筆 token
-        // }
-
-        // user.tokens.push(token);
         user.tokens = [token];
 
         await user.save();
+
+        const decoded = jwt.decode(token) as JwtPayload;
+        const iatFormatted = formatUnixTimestamp(decoded.iat);
+        const expFormatted = formatUnixTimestamp(decoded.exp);
 
         res.json({
             success: true,
             message: '登入成功',
             token,
+            iat: iatFormatted,
+            exp: expFormatted,
             user: { account: user.account, role: user.role },
         });
 
