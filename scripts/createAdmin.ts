@@ -37,6 +37,6 @@ async function createAdmin() {
 }
 
 createAdmin().catch(err => {
-    console.error('❌ 建立失敗', err);
+    logError('❌ 建立失敗', err);
     process.exit(1);
 });

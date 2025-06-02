@@ -44,7 +44,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         req.user = decoded;
         next();
     } catch (err: unknown) {
-        console.error('[token 錯誤]', err);
+        logError('[token 錯誤]', err);
 
         if (err instanceof jwt.TokenExpiredError) {
             res.status(401).json({ success: false, message: 'token 已過期，請重新登入' });

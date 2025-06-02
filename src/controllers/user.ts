@@ -137,11 +137,12 @@ export const login = async (req: Request, res: Response) => {
             user: { account: user.account, role: user.role },
         });
 
-        const roleLabel = user.role === UserRole.ADMIN ? '管理員' :
-                          user.role === UserRole.USER ? '一般會員' : '未知角色';
+        const roleLabel = 
+            user.role === UserRole.ADMIN ? '管理員' :
+            user.role === UserRole.USER ? '一般會員' : '未知角色';
         log(`✅ 使用者登入：帳號=${user.account}，身分=${roleLabel}`);
     } catch (err) {
-        console.error('❌ 登入發生錯誤:', err);
+        logError('❌ 登入發生錯誤:', err);
         res.status(500).json({ success: false, message: '伺服器錯誤' });
     }
 };
@@ -172,7 +173,7 @@ export const logout = async (req: Request, res: Response) => {
             message: removed ? '已登出' : 'Token 已不存在（可能已被移除）'
         });
     } catch (err) {
-        console.error('🔴 登出錯誤:', err);
+        logError('🔴 登出錯誤:', err);
         res.status(500).json({ success: false, message: '登出失敗' });
     }
 };

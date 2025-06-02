@@ -56,7 +56,7 @@ cron.schedule('0 */8 * * *', async () => {
       log(`🔍 token exp: ${decoded.exp}, now: ${now}`);
       return decoded.exp && decoded.exp > now;
     } catch {
-      console.warn(`⚠️ 無效或過期 token 被移除`);
+      logWarn(`⚠️ 無效或過期 token 被移除`);
       return false;
     }
   });
@@ -71,7 +71,7 @@ cron.schedule('0 */8 * * *', async () => {
 }
 
   } catch (err) {
-    console.error('❌ cron 任務執行失敗：', err);
+    logError('❌ cron 任務執行失敗：', err);
   }
 });
 
@@ -85,7 +85,7 @@ app.use(cors({
     if (!origin || allowlist.includes(origin)) {
       callback(null, true);
     } else {
-      console.warn('❌ 被擋下的跨域來源:', origin);
+      logWarn('❌ 被擋下的跨域來源:', origin);
       callback(null, false); // ❗ 不要丟 Error
     }
   },
@@ -108,7 +108,7 @@ app.get('/test', (req, res) => {
 
 // 以上請求都沒有就進入
 app.use((req, res) => {
-    console.warn(`未知請求將導向外部網址`);
+    logWarn(`未知請求將導向外部網址`);
     res.redirect('https://www.youtube.com/watch?v=IxX_QHay02M');
 });
 
@@ -116,7 +116,7 @@ app.use((req, res) => {
 // ✅ 全域錯誤處理 middleware（一定要放在所有 route 後面）
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {
-    console.error('[全域錯誤]', err);
+    logError('[全域錯誤]', err);
 
     const fallback = '未知錯誤';
     const message = typeof req.t === 'function' ? req.t('unknown_error') : fallback;
@@ -147,7 +147,7 @@ async function startServer() {
             log(`🚀 伺服器啟動：port ${PORT}`);
         });
     } catch (err) {
-        console.error('❌ 資料庫連線失敗：', err);
+        logError('❌ 資料庫連線失敗：', err);
         process.exit(1); // 強制關閉
     }
 }
