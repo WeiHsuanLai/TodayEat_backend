@@ -52,5 +52,5 @@ npm run dev
 
 # 建立管理員
 ```
-    npm run create-admin
+npm run create-admin
 ```
