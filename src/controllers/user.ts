@@ -26,7 +26,7 @@ export const create = async (req: Request, res: Response) => {
     if (!errors.isEmpty()) {
         res.status(400).json({
             success: false,
-            message: '欄位驗證錯誤',
+            message: req.t('欄位驗證錯誤'),
             errors: errors.array(),
         });
         return;
@@ -35,7 +35,7 @@ export const create = async (req: Request, res: Response) => {
     if (req.body.password.length > 20) {
         res.status(400).json({
             success: false,
-            message: '密碼長度不能超過 20 字元',
+            message: req.t('密碼長度不能超過 20 字元'),
         });
         return;
     }
@@ -46,7 +46,7 @@ export const create = async (req: Request, res: Response) => {
     if (role === UserRole.ADMIN) {
         res.status(403).json({
             success: false,
-            message: '禁止註冊管理員帳號',
+            message: req.t('禁止註冊管理員帳號'),
         });
         return;
     }
@@ -62,23 +62,23 @@ export const create = async (req: Request, res: Response) => {
 
         res.status(StatusCodes.OK).json({
             success: true,
-            message: '註冊成功',
+            message: req.t('註冊成功'),
         });
     } catch (err) {
         if (err instanceof mongoose.Error.ValidationError) {
             res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: '欄位驗證錯誤',
+                message: req.t('欄位驗證錯誤'),
             });
         } else if (isMongoServerError(err)) {
             res.status(StatusCodes.CONFLICT).json({
                 success: false,
-                message: '此帳號已存在',
+                message: req.t('此帳號已存在'),
             });
         } else {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 success: false,
-                message: '註冊失敗，請稍後再試',
+                message: req.t('註冊失敗，請稍後再試'),
             });
         }
     }
@@ -91,7 +91,7 @@ export const login = async (req: Request, res: Response) => {
         const { account, password } = req.body;
         const user = await User.findOne({ account });
         if (!user) {
-            res.status(401).json({ success: false, message: '帳號不存在' });
+            res.status(401).json({ success: false, message: req.t('帳號不存在') });
             return;
         }
 
@@ -109,7 +109,7 @@ export const login = async (req: Request, res: Response) => {
         // 比對密碼轉換
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
-            res.status(401).json({ success: false, message: '密碼錯誤' });
+            res.status(401).json({ success: false, message: req.t('密碼錯誤') });
             return;
         }
 
@@ -130,7 +130,7 @@ export const login = async (req: Request, res: Response) => {
 
         res.json({
             success: true,
-            message: '登入成功',
+            message: req.t('登入成功'),
             token,
             iat: iatFormatted,
             exp: expFormatted,
@@ -143,7 +143,7 @@ export const login = async (req: Request, res: Response) => {
         log(`✅ 使用者登入：帳號=${user.account}，身分=${roleLabel}`);
     } catch (err) {
         logError('❌ 登入發生錯誤:', err);
-        res.status(500).json({ success: false, message: '伺服器錯誤' });
+        res.status(500).json({ success: false, message: req.t('伺服器錯誤') });
     }
 };
 
@@ -152,14 +152,14 @@ export const logout = async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token || !req.user) {
-        res.status(400).json({ success: false, message: '無效的請求' });
+        res.status(400).json({ success: false, message: req.t('無效的請求') });
         return;
     }
 
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
-            res.status(404).json({ success: false, message: '找不到使用者' });
+            res.status(404).json({ success: false, message: req.t('找不到使用者') });
             return;
         }
 
@@ -170,10 +170,10 @@ export const logout = async (req: Request, res: Response) => {
         const removed = beforeCount - user.tokens.length;
         res.json({
             success: true,
-            message: removed ? '已登出' : 'Token 已不存在（可能已被移除）'
+            message: removed ? req.t('已登出') : req.t('Token 已不存在（可能已被移除）')
         });
     } catch (err) {
         logError('🔴 登出錯誤:', err);
-        res.status(500).json({ success: false, message: '登出失敗' });
+        res.status(500).json({ success: false, message: req.t('登出失敗') });
     }
 };

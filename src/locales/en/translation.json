@@ -13,5 +13,20 @@
     "🟡 查詢 tokens 不為空的使用者筆數：":"🟡 Number of users with non-empty tokens found:",
     "⚠️ 無效或過期 token 被移除":"⚠️ Invalid or expired token has been removed",
     "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token": "🕒 cron: Updated {{account}}, removed {{count}} token(s)",
-    "🔍 token 有效期限：{{exp}}，當前時間：{{now}}": "🔍 token exp: {{exp}}，now: {{now}}"
+    "🔍 token 有效期限：{{exp}}，當前時間：{{now}}": "🔍 token exp: {{exp}}，now: {{now}}",
+    "欄位驗證錯誤":"Field validation failed",
+    "密碼長度不能超過 20 字元":"Password must not exceed 20 characters",
+    "禁止註冊管理員帳號":"Registering admin accounts is not allowed",
+    "註冊成功":"Registration successful",
+    "此帳號已存在": "This account already exists",
+    "註冊失敗，請稍後再試": "Registration failed. Please try again later",
+    "帳號不存在": "Account does not exist",
+    "密碼錯誤": "Incorrect password",
+    "登入成功": "Login successful",
+    "伺服器錯誤": "Server error",
+    "無效的請求": "Invalid request",
+    "找不到使用者": "User not found",
+    "已登出": "Logged out successfully",
+    "Token 已不存在（可能已被移除）": "Token no longer exists (may have been removed)",
+    "登出失敗": "Logout failed"
 }
