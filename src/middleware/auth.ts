@@ -29,7 +29,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     if (!token) {
         res.status(403).json({
             success: false,
-            message: '禁止存取，缺少有效憑證',
+            message: req.t('禁止存取，缺少有效憑證'),
             reason: 'missing_or_invalid_token_format',
         });
         return;
@@ -39,7 +39,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     if (typeof token !== 'string') {
         res.status(403).json({
             success: false,
-            message: 'Token 類型錯誤',
+            message: req.t('Token 類型錯誤'),
             reason: 'token_not_string',
         });
         return
@@ -52,7 +52,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             log(`驗證失敗：user=${!!user} tokenInList=${user?.tokens.includes(token)}`);
             res.status(401).json({
                 success: false,
-                message: '登入已失效',
+                message: req.t('登入已失效'),
                 reason: 'invalid_token',
             });
             return
@@ -63,7 +63,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         if (token !== lastToken) {
             res.status(401).json({
                 success: false,
-                message: '此 token 已被取代，請重新登入',
+                message: req.t('此 token 已被取代，請重新登入'),
                 reason: 'token_superseded',
             });
             return
@@ -77,7 +77,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         if (err instanceof jwt.TokenExpiredError) {
             res.status(401).json({
                 success: false,
-                message: 'token 已過期，請重新登入',
+                message: req.t('token 已過期，請重新登入'),
                 reason: 'token_expired',
             });
             return
@@ -85,7 +85,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
         res.status(401).json({
             success: false,
-            message: 'token 驗證失敗',
+            message: req.t('token 驗證失敗'),
             reason: 'token_invalid',
         });
         return

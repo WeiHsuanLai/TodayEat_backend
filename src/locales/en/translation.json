@@ -28,5 +28,11 @@
     "找不到使用者": "User not found",
     "已登出": "Logged out successfully",
     "Token 已不存在（可能已被移除）": "Token no longer exists (may have been removed)",
-    "登出失敗": "Logout failed"
+    "登出失敗": "Logout failed",
+    "禁止存取，缺少有效憑證": "Access denied. Missing or invalid credentials.",
+    "Token 類型錯誤": "Token must be a string.",
+    "登入已失效": "Login session has expired.",
+    "此 token 已被取代，請重新登入": "This token has been superseded. Please log in again.",
+    "token 已過期，請重新登入": "Token has expired. Please log in again.",
+    "token 驗證失敗": "Token verification failed."
 }
