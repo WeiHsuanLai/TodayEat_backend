@@ -7,7 +7,7 @@ import { formatUnixTimestamp } from '../utils/formatTime';
 const router = express.Router();
 
 router.post(
-    '/',
+    '/register',
     [
         body('account')
         .isLength({ min: 4, max: 20 }).withMessage('帳號長度應為4~20')
