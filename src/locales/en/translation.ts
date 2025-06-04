@@ -1,4 +1,11 @@
-{
+export default {
+    // index.ts
+    "🕒 cron 任務開始執行":"🕒 cron job started execution",
+    "🟡 查詢 tokens 不為空的使用者筆數：":"🟡 Number of users with non-empty tokens found:",
+    "🔍 token 有效期限：{{exp}}，當前時間：{{now}}": "🔍 token exp: {{exp}}，now: {{now}}",
+    "⚠️ 無效或過期 token 被移除":"⚠️ Invalid or expired token has been removed",
+    "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token": "🕒 cron: Updated {{account}}, removed {{count}} token(s)",
+    '❌ cron 任務執行失敗：': '❌ Cron job failed:',
     "發生未知錯誤，請稍後再試": "unknown_error",
     "測試鑰匙": "test_key",
     "測試成功":"test_success",
@@ -9,11 +16,8 @@
     "✅ 資料庫連線成功":"✅ 資料庫連線成功",
     "🚀 伺服器啟動：port ":"🚀 server_started ",
     "❌ 資料庫連線失敗：":"❌ Failed to connect to the database:",
-    "🕒 cron 任務開始執行":"🕒 cron job started execution",
-    "🟡 查詢 tokens 不為空的使用者筆數：":"🟡 Number of users with non-empty tokens found:",
-    "⚠️ 無效或過期 token 被移除":"⚠️ Invalid or expired token has been removed",
-    "🕒 cron：已更新 {{account}}，移除 {{count}} 筆 token": "🕒 cron: Updated {{account}}, removed {{count}} token(s)",
-    "🔍 token 有效期限：{{exp}}，當前時間：{{now}}": "🔍 token exp: {{exp}}，now: {{now}}",
+
+    // controllers\user.ts
     "欄位驗證錯誤":"Field validation failed",
     "密碼長度不能超過 20 字元":"Password must not exceed 20 characters",
     "禁止註冊管理員帳號":"Registering admin accounts is not allowed",
@@ -29,6 +33,8 @@
     "已登出": "Logged out successfully",
     "Token 已不存在（可能已被移除）": "Token no longer exists (may have been removed)",
     "登出失敗": "Logout failed",
+
+    // middleware\auth.ts
     "禁止存取，缺少有效憑證": "Access denied. Missing or invalid credentials.",
     "Token 類型錯誤": "Token must be a string.",
     "登入已失效": "Login session has expired.",
