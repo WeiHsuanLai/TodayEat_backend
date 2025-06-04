@@ -18,15 +18,32 @@ declare module 'express-serve-static-core' {
 }
 
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const authHeader = req.headers.authorization; //檢查標頭
+    const authHeader = req.headers.authorization;
+    const tokenFromHeader = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+    const tokenFromAltHeader = req.headers['x-access-token'];
 
-    // 沒帶 token
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        res.status(401).json({ success: false, message: '未提供 token' });
+    // 🧠 優先使用 Authorization，其次使用 x-access-token
+    const token = tokenFromHeader || tokenFromAltHeader;
+
+    // ❌ 沒帶 token
+    if (!token) {
+        res.status(403).json({
+            success: false,
+            message: '禁止存取，缺少有效憑證',
+            reason: 'missing_or_invalid_token_format',
+        });
         return;
     }
 
-    const token = authHeader.split(' ')[1];
+    // ✅ 類型驗證：必須是 string
+    if (typeof token !== 'string') {
+        res.status(403).json({
+            success: false,
+            message: 'Token 類型錯誤',
+            reason: 'token_not_string',
+        });
+        return
+    }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as DecodedUser;
@@ -40,16 +57,38 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             });
             return
         }
+
+        // ✅ 多重登入控制：只允許最新一筆 token 有效
+        const lastToken = user.tokens[user.tokens.length - 1];
+        if (token !== lastToken) {
+            res.status(401).json({
+                success: false,
+                message: '此 token 已被取代，請重新登入',
+                reason: 'token_superseded',
+            });
+            return
+        }
+
         req.user = decoded;
         next();
     } catch (err: unknown) {
         logError('[token 錯誤]', err);
 
         if (err instanceof jwt.TokenExpiredError) {
-            res.status(401).json({ success: false, message: 'token 已過期，請重新登入' });
-        } else {
-            res.status(401).json({ success: false, message: 'token 驗證失敗' });
+            res.status(401).json({
+                success: false,
+                message: 'token 已過期，請重新登入',
+                reason: 'token_expired',
+            });
+            return
         }
+
+        res.status(401).json({
+            success: false,
+            message: 'token 驗證失敗',
+            reason: 'token_invalid',
+        });
+        return
     }
 
 };
