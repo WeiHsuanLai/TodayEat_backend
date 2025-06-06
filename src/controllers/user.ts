@@ -168,6 +168,13 @@ export const logout = async (req: Request, res: Response) => {
         await user.save();
 
         const removed = beforeCount - user.tokens.length;
+
+        if (removed) {
+            log(`👋 使用者登出：帳號=${user.account}`);
+        } else {
+            log(`ℹ️ Token 已不存在（可能早已移除）：帳號=${user.account}`);
+        }
+
         res.json({
             success: true,
             message: removed ? req.t('已登出') : req.t('Token 已不存在（可能已被移除）')
