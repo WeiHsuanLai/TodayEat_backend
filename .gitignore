@@ -39,3 +39,6 @@ Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
+
+# 忽略 VSCode MongoDB Playground
+*.mongodb.js
