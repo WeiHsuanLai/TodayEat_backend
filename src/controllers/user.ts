@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs'; //密碼雜湊與驗證
 import { validationResult } from 'express-validator'; // 驗證欄位
 import UserRole from '../enums/UserRole'; // 使用者權限定義
 import { formatUnixTimestamp } from '../utils/formatTime'; // 時間轉換工具
+import { sendResetPasswordEmail } from '../utils/mailer';
 
 // 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
@@ -227,5 +228,19 @@ export const logout = async (req: Request, res: Response) => {
     } catch (err) {
         logError('🔴 登出錯誤:', err);
         res.status(500).json({ success: false, message: req.t('登出失敗') });
+    }
+};
+
+//寄送郵件
+
+export const forgotPassword = async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    try {
+        await sendResetPasswordEmail(email, '這是測試內容，不含 token');
+        res.json({ message: '測試郵件已成功寄出' });
+    } catch (err) {
+        console.error('寄信失敗：', err);
+        res.status(500).json({ message: '寄信失敗' });
     }
 };

@@ -4,6 +4,7 @@ import { body } from 'express-validator';
 import { login } from '../controllers/user';
 import { authMiddleware } from '../middleware/auth';
 import { formatUnixTimestamp } from '../utils/formatTime';
+import { forgotPassword } from '../controllers/user';
 const router = express.Router();
 
 router.post(
@@ -47,5 +48,8 @@ router.get('/me', authMiddleware, (req, res) => {
         }
     });
 });
+
+
+router.post('/forgot-password', forgotPassword);
 
 export default router; 
