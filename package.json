@@ -6,7 +6,7 @@
     "dev": "cross-env CLEAR=1 ts-node-dev --respawn --transpile-only --watch src,locales src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "create-admin": "ts-node scripts/createAdmin.ts"
+    "createAdmin": "ts-node scripts/createAdmin.ts"
   },
   "keywords": [],
   "author": "",

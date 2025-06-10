@@ -3,7 +3,7 @@ import { register, logout } from '../controllers/user';
 import { body } from 'express-validator';
 import { login } from '../controllers/user';
 import { authMiddleware } from '../middleware/auth';
-import { formatUnixTimestamp } from '../utils/formatTime';
+// import { formatUnixTimestamp } from '../utils/formatTime';
 import { forgotPassword } from '../controllers/user';
 const router = express.Router();
 
