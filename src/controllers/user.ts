@@ -7,7 +7,8 @@ import bcrypt from 'bcryptjs'; //密碼雜湊與驗證
 import { validationResult } from 'express-validator'; // 驗證欄位
 import UserRole from '../enums/UserRole'; // 使用者權限定義
 import { formatUnixTimestamp } from '../utils/formatTime'; // 時間轉換工具
-import { sendResetPasswordEmail } from '../utils/mailer';
+import { sendResetPasswordEmail } from '../utils/mailer'; // 傳送 emaal
+import  LoginLog  from '../models/LoginLog'; // 查詢登入登出紀錄
 
 // 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
@@ -90,6 +91,7 @@ export const register = async (req: Request, res: Response) => {
 
         // 存入 token 清單
         newUser.tokens = [token];
+        newUser.lastLoginAt = new Date();
         await newUser.save();
 
         const decoded = jwt.decode(token) as JwtPayload;
@@ -110,6 +112,14 @@ export const register = async (req: Request, res: Response) => {
                 role: newUser.role,
             },
         });
+
+        await LoginLog.create({
+            userId: newUser._id,
+            action: 'login',
+            ip: req.ip,
+            userAgent: req.headers['user-agent'] || 'unknown',
+        });
+        
     } catch (err) {
         if (err instanceof mongoose.Error.ValidationError) {
             res.status(StatusCodes.BAD_REQUEST).json({
@@ -172,7 +182,7 @@ export const login = async (req: Request, res: Response) => {
         );
 
         user.tokens = [token];
-
+        user.lastLoginAt = new Date();
         await user.save();
 
         const decoded = jwt.decode(token) as JwtPayload;
@@ -186,6 +196,13 @@ export const login = async (req: Request, res: Response) => {
             iat: iatFormatted,
             exp: expFormatted,
             user: { account: user.account, role: user.role },
+        });
+
+        await LoginLog.create({
+            userId: user._id,
+            action: 'login',
+            ip: req.ip,
+            userAgent: req.headers['user-agent'] || 'unknown',
         });
 
         const roleLabel = 
@@ -216,9 +233,17 @@ export const logout = async (req: Request, res: Response) => {
 
         const beforeCount = user.tokens.length;
         user.tokens = user.tokens.filter(t => t !== token);
+        user.lastLogoutAt = new Date();
         await user.save();
 
         const removed = beforeCount - user.tokens.length;
+
+        await LoginLog.create({
+            userId: user._id,
+            action: 'logout',
+            ip: req.ip,
+            userAgent: req.headers['user-agent'] || 'unknown',
+        });
 
         if (removed) {
             log(`👋 使用者登出：帳號=${user.account}`);

@@ -56,7 +56,13 @@ const schema = new Schema(
         role:{
             type:Number,
             default: UserRole.USER,
-        }
+        },
+        lastLoginAt: {
+            type: Date
+        },
+        lastLogoutAt: {
+            type: Date
+        },
     },
     {
         timestamps: true,
@@ -80,6 +86,8 @@ interface IUser extends mongoose.Document {
     tokens: string[];
     cart: ICartItem[];
     role: number;
+    lastLoginAt?: Date;
+    lastLogoutAt?: Date; 
     isModified(field: string): boolean;
 }
 
