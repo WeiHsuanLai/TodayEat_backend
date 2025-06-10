@@ -36,6 +36,16 @@ const schema = new Schema(
             required:[true,'使用者密碼必填'],
             minlength:[4,'使用者密碼長度不符'],
         },
+        email: {
+            type: String,
+            required: [true, '使用者 Email 必填'],
+            unique: true,
+            lowercase: true,
+            validate: {
+                validator: (value: string) => validator.isEmail(value),
+                message: 'Email 格式錯誤'
+            }
+        },
         tokens:{
             type:[String],
             default: []
@@ -66,6 +76,7 @@ interface ICartItem {
 interface IUser extends mongoose.Document {
     account: string;
     password: string;
+    email: string;
     tokens: string[];
     cart: ICartItem[];
     role: number;

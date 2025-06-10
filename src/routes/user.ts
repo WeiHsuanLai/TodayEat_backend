@@ -1,5 +1,5 @@
 import express from 'express';
-import { create, logout } from '../controllers/user';
+import { register, logout } from '../controllers/user';
 import { body } from 'express-validator';
 import { login } from '../controllers/user';
 import { authMiddleware } from '../middleware/auth';
@@ -15,7 +15,7 @@ router.post(
         body('password')
         .isLength({ min: 4 }).withMessage('密碼長度至少4碼'),
     ],
-    create
+    register
 );
 
 router.post('/login', login);

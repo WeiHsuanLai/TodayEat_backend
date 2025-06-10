@@ -19,7 +19,7 @@ function isMongoServerError(error: unknown): error is { name: string; code: numb
 }
 
 // 建立帳號
-export const create = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response) => {
     log('收到的 req.body:', req.body);
     const errors = validationResult(req);
 
@@ -51,18 +51,63 @@ export const create = async (req: Request, res: Response) => {
         return;
     }
 
+    // 檢查帳號是否重複
+    const existingAccount = await User.findOne({ account: req.body.account });
+    if (existingAccount) {
+        res.status(StatusCodes.CONFLICT).json({
+            success: false,
+            message: req.t('此帳號已存在'),
+        });
+        return;
+    }
+
+    // 檢查 email 是否已經註冊
+    const existingEmail = await User.findOne({ email: req.body.email });
+    if (existingEmail) {
+        res.status(StatusCodes.CONFLICT).json({
+            success: false,
+            message: req.t('此 Email 已被註冊'),
+        });
+        return;
+    }
+
     try {
+        // 建立帳號
         const newUser = await User.create({
             account: req.body.account,
             password: req.body.password,
+            email: req.body.email,
             role,
         });
 
-        log('✅ 新使用者已建立:', newUser);
+        // 建立 JWT token
+        const token = jwt.sign(
+            { id: newUser._id, account: newUser.account, role: newUser.role },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '8h' }
+        );
+
+        // 存入 token 清單
+        newUser.tokens = [token];
+        await newUser.save();
+
+        const decoded = jwt.decode(token) as JwtPayload;
+        const iatFormatted = formatUnixTimestamp(decoded.iat);
+        const expFormatted = formatUnixTimestamp(decoded.exp);
+
+        log('✅ 新使用者已建立並自動登入:', newUser);
 
         res.status(StatusCodes.OK).json({
             success: true,
             message: req.t('註冊成功'),
+            token,
+            iat: iatFormatted,
+            exp: expFormatted,
+            user: {
+                account: newUser.account,
+                email: newUser.email,
+                role: newUser.role,
+            },
         });
     } catch (err) {
         if (err instanceof mongoose.Error.ValidationError) {
