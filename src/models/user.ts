@@ -105,9 +105,10 @@ schema.methods.comparePassword = function (inputPassword: string): boolean {
 
 // 建立虛擬欄位，名為'cartQuantity'，當 get 時，指向購物車陣列，並將所有 quantity 加總後回傳
 schema.virtual('cartQuantity').get(function(){
+    if (!Array.isArray(this.cart)) return 0;
     return this.cart.reduce((total, current) => {
         return total + current.quantity
     }, 0)
 })
 
-export default model<IUser>('user', schema)
+export default model<IUser>('User', schema)

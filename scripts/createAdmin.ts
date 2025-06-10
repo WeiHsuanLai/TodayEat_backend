@@ -11,6 +11,7 @@ async function createAdmin() {
     const DB_URL = process.env.DB_URL;
     const account = process.env.ADMIN_ACCOUNT;
     const password = process.env.ADMIN_PASSWORD;
+    const email = process.env.ADMIN_EMAIL;
 
     if (!DB_URL || !account || !password) {
         throw new Error('❌ 請在 .env 中設定 DB_URL、ADMIN_ACCOUNT、ADMIN_PASSWORD');
@@ -29,6 +30,7 @@ async function createAdmin() {
         account,
         password,
         role: UserRole.ADMIN, // 指定為管理員
+        email,
         tokens: []
     });
 

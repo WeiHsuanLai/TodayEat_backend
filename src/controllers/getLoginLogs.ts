@@ -2,11 +2,11 @@ import LoginLog from "../models/LoginLog";
 import { Request, Response } from 'express';
 
 interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    account: string;
-    role: number;
-  };
+    user?: {
+        id: string;
+        account: string;
+        role: number;
+    };
 }
 
 export const getLoginLogs = async (req: AuthenticatedRequest, res: Response) => {

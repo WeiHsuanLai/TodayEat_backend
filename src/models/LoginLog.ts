@@ -1,9 +1,9 @@
-import { Schema, model } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
-const loginLogSchema = new Schema({
+const schema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
-        ref: 'user',
+        ref: 'User',
         required: true,
     },
     action: {
@@ -18,8 +18,7 @@ const loginLogSchema = new Schema({
     ip: String,
     userAgent: String,
 }, {
-    timestamps: true,
     versionKey: false
 });
 
-export default model('login_logs', loginLogSchema);
+export default mongoose.model('LoginLog', schema, 'login_logs');
