@@ -27,27 +27,27 @@ router.get('/', (req, res) => {
     res.send('Hello from user route');
 });
 
-// 測試登入失效
-router.get('/me', authMiddleware, (req, res) => {
-    if (!req.user) {
-        res.status(401).json({ success: false, message: '尚未登入' });
-        return
-    }
+// // 測試登入失效
+// router.get('/me', authMiddleware, (req, res) => {
+//     if (!req.user) {
+//         res.status(401).json({ success: false, message: '尚未登入' });
+//         return
+//     }
 
-    const { id, account, role, iat, exp } = req.user;
+//     const { id, account, role, iat, exp } = req.user;
 
-    res.json({
-        success: true,
-        message: '你已登入',
-        user: {
-            id,
-            account,
-            role,
-            iat: formatUnixTimestamp(iat), // 預設使用系統本地時間
-            exp: formatUnixTimestamp(exp),
-        }
-    });
-});
+//     res.json({
+//         success: true,
+//         message: '你已登入',
+//         user: {
+//             id,
+//             account,
+//             role,
+//             iat: formatUnixTimestamp(iat), // 預設使用系統本地時間
+//             exp: formatUnixTimestamp(exp),
+//         }
+//     });
+// });
 
 
 router.post('/forgot-password', forgotPassword);
