@@ -84,11 +84,10 @@ interface IUser extends mongoose.Document {
 }
 
 // 密碼加密，自動檢查是否變更，若有變更就進行雜湊加密
-schema.pre<IUser>('save', function (next) {
+schema.pre<IUser>('save', async function () {
     if (this.isModified('password')) {
-        this.password = bcrypt.hashSync(this.password, 10);
+        this.password = await bcrypt.hash(this.password, 10);
     }
-    next();
 });
 
 // 將輸入密碼進行加密後與資料庫中的加密密碼比對，回傳 true / false

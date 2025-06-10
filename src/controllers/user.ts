@@ -116,16 +116,19 @@ export const register = async (req: Request, res: Response) => {
                 success: false,
                 message: req.t('欄位驗證錯誤'),
             });
+            log("欄位驗證錯誤");
         } else if (isMongoServerError(err)) {
             res.status(StatusCodes.CONFLICT).json({
                 success: false,
                 message: req.t('此帳號已存在'),
             });
+            log("此帳號已存在");
         } else {
             res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
                 success: false,
                 message: req.t('註冊失敗，請稍後再試'),
             });
+            log("註冊失敗，請稍後再試");
         }
     }
 };
@@ -138,6 +141,7 @@ export const login = async (req: Request, res: Response) => {
         const user = await User.findOne({ account });
         if (!user) {
             res.status(401).json({ success: false, message: req.t('帳號不存在') });
+            log("帳號不存在");
             return;
         }
 
@@ -156,6 +160,7 @@ export const login = async (req: Request, res: Response) => {
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
             res.status(401).json({ success: false, message: req.t('密碼錯誤') });
+            log("密碼錯誤");
             return;
         }
 
@@ -231,8 +236,36 @@ export const logout = async (req: Request, res: Response) => {
     }
 };
 
-//寄送郵件
+// 修改密碼
+export const changePassword = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const { currentPassword, newPassword } = req.body;
 
+    if (!userId || !currentPassword || !newPassword) {
+        res.status(400).json({ success: false, message: req.t('請填寫完整欄位') });
+        return
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+        res.status(404).json({ success: false, message: req.t('找不到使用者') });
+        return
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) {
+        res.status(401).json({ success: false, message: req.t('目前密碼錯誤') });
+        return
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ success: true, message: req.t('密碼已成功修改') });
+};
+
+
+//寄送郵件
 export const forgotPassword = async (req: Request, res: Response) => {
     const { email } = req.body;
 

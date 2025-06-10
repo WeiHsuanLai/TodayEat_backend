@@ -1,10 +1,9 @@
 import express from 'express';
-import { register, logout } from '../controllers/user';
+import { register, logout,forgotPassword,changePassword,login } from '../controllers/user';
 import { body } from 'express-validator';
-import { login } from '../controllers/user';
 import { authMiddleware } from '../middleware/auth';
 // import { formatUnixTimestamp } from '../utils/formatTime';
-import { forgotPassword } from '../controllers/user';
+
 const router = express.Router();
 
 router.post(
@@ -49,7 +48,10 @@ router.get('/', (req, res) => {
 //     });
 // });
 
+// 修改密碼
+router.post('/change-password', authMiddleware, changePassword);
 
+// 寄送郵件(目前)
 router.post('/forgot-password', forgotPassword);
 
 export default router; 
