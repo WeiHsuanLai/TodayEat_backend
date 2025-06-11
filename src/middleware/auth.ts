@@ -17,6 +17,7 @@ declare module 'express-serve-static-core' {
     }
 }
 
+// 使用者驗證中介層
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const authHeader = req.headers.authorization;
     const tokenFromHeader = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
@@ -27,6 +28,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
 
     // ❌ 沒帶 token
     if (!token) {
+        log("沒帶token")
         res.status(403).json({
             success: false,
             message: req.t('禁止存取，缺少有效憑證'),
@@ -48,7 +50,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as DecodedUser;
         const user = await User.findById(decoded.id);
-        if (!user || !Array.isArray(user.tokens) || !user.tokens.includes(token)) {
+        if (!user || !Array.isArray(user.tokens) || !(user.tokens as string[]).includes(token)) {
             log(`驗證失敗：user=${!!user} tokenInList=${user?.tokens.includes(token)}`);
             res.status(401).json({
                 success: false,
@@ -72,7 +74,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         req.user = decoded;
         next();
     } catch (err: unknown) {
-        logError('[token 錯誤]', err);
+        logError(`[token 錯誤: ${err instanceof Error ? err.message : '未知錯誤'}]`, err);
 
         if (err instanceof jwt.TokenExpiredError) {
             res.status(401).json({

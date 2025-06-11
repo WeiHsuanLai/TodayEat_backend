@@ -100,9 +100,9 @@ export const register = async (req: Request, res: Response) => {
         newUser.lastLoginAt = new Date();
         await newUser.save();
 
-        const decoded = jwt.decode(token) as JwtPayload;
-        const iatFormatted = formatUnixTimestamp(decoded.iat);
-        const expFormatted = formatUnixTimestamp(decoded.exp);
+        // const decoded = jwt.decode(token) as JwtPayload;
+        // const iatFormatted = formatUnixTimestamp(decoded.iat);
+        // const expFormatted = formatUnixTimestamp(decoded.exp);
 
         log('✅ 新使用者已建立並自動登入:', newUser);
 
@@ -110,12 +110,12 @@ export const register = async (req: Request, res: Response) => {
             success: true,
             message: req.t('註冊成功'),
             token,
-            iat: iatFormatted,
-            exp: expFormatted,
+            // iat: iatFormatted,
+            // exp: expFormatted,
             user: {
                 account: newUser.account,
-                email: newUser.email,
-                role: newUser.role,
+                // email: newUser.email,
+                // role: newUser.role,
             },
         });
 
@@ -151,6 +151,35 @@ export const register = async (req: Request, res: Response) => {
             });
             log("註冊失敗，請稍後再試");
         }
+    }
+};
+
+// 註銷帳號
+export const deleteAccount = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.id;
+
+        const user = await User.findById(userId);
+        const result = await User.findByIdAndUpdate(userId, {
+            isDeleted: true,
+            deletedAt: new Date(),
+            originalAccount: user?.account,
+            originalEmail: user?.email,
+            email: `deleted_${Date.now()}@example.com`,
+            account: `deleted_user_${userId}`,
+            tokens: [],
+            cart: [],
+        });
+
+        if (!result) {
+            res.status(404).json({ message: '找不到使用者' });
+            return
+        }
+
+        res.status(200).json({ message: '帳號已成功註銷' });
+    } catch (err) {
+        console.error('註銷帳號失敗', err);
+        res.status(500).json({ message: '伺服器錯誤，無法註銷帳號' });
     }
 };
 

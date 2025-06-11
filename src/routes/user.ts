@@ -1,10 +1,13 @@
 import express from 'express';
-import { register, logout,forgotPassword,changePassword,login } from '../controllers/user';
+import { register, logout,forgotPassword,changePassword,login,deleteAccount } from '../controllers/user';
 import { body } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
 import { getLoginLogs } from '../controllers/getLoginLogs';
 
 const router = express.Router();
+
+
+// ✅ 公開 API
 
 // 註冊
 router.post(
@@ -22,21 +25,28 @@ router.post(
 // 登入
 router.post('/login', login);
 
-// 查詢登入紀錄
-router.get('/login-logs', authMiddleware, getLoginLogs);
-
-// 登出
-router.post('/logout', authMiddleware, logout);
+// 寄送郵件(目前)
+router.post('/forgot-password', forgotPassword);
 
 // 測試
 router.get('/', (req, res) => {
     res.send('Hello from user route');
 });
 
+
+// ✅ 需要登入驗證的 API
+
+// 登出
+router.post('/logout', authMiddleware, logout);
+
+// 查詢登入紀錄
+router.get('/login-logs', authMiddleware, getLoginLogs);
+
 // 修改密碼
 router.post('/change-password', authMiddleware, changePassword);
 
-// 寄送郵件(目前)
-router.post('/forgot-password', forgotPassword);
+// 註銷帳號
+router.delete('/delete', authMiddleware, deleteAccount); 
+
 
 export default router; 

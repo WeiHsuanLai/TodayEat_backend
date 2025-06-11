@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from "mongoose";
+import mongoose, { Schema, model, Query } from "mongoose";
 import validator from "validator";
 import bcrypt from 'bcryptjs';
 import UserRole from "../enums/UserRole"
@@ -63,6 +63,19 @@ const schema = new Schema(
         lastLogoutAt: {
             type: Date
         },
+        originalAccount: {
+            type: String,
+            select: false,
+        },
+        originalEmail: {
+            type: String,
+            select: false,
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false,
+        },
+        deletedAt: Date,
     },
     {
         timestamps: true,
@@ -97,6 +110,14 @@ schema.pre<IUser>('save', async function () {
         this.password = await bcrypt.hash(this.password, 10);
     }
 });
+
+// 自動排除掉已經被註銷（isDeleted: true）的使用者
+function applyNotDeletedFilter(this: Query<unknown, IUser>, next: () => void) {
+    this.where({ isDeleted: false });
+    next();
+}
+schema.pre(/^find/, applyNotDeletedFilter);
+schema.pre('findOneAndUpdate', applyNotDeletedFilter);
 
 // 將輸入密碼進行加密後與資料庫中的加密密碼比對，回傳 true / false
 schema.methods.comparePassword = function (inputPassword: string): boolean {
