@@ -6,6 +6,7 @@ import { getLoginLogs } from '../controllers/getLoginLogs';
 
 const router = express.Router();
 
+// 註冊
 router.post(
     '/register',
     [
@@ -18,12 +19,16 @@ router.post(
     register
 );
 
+// 登入
 router.post('/login', login);
 
 // 查詢登入紀錄
 router.get('/login-logs', authMiddleware, getLoginLogs);
+
+// 登出
 router.post('/logout', authMiddleware, logout);
 
+// 測試
 router.get('/', (req, res) => {
     res.send('Hello from user route');
 });

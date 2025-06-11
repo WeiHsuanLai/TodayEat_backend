@@ -9,6 +9,7 @@ import UserRole from '../enums/UserRole'; // 使用者權限定義
 import { formatUnixTimestamp } from '../utils/formatTime'; // 時間轉換工具
 import { sendResetPasswordEmail } from '../utils/mailer'; // 傳送 emaal
 import  LoginLog  from '../models/LoginLog'; // 查詢登入登出紀錄
+import { log } from 'console';
 
 // 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
@@ -24,13 +25,18 @@ function isMongoServerError(error: unknown): error is { name: string; code: numb
 export const register = async (req: Request, res: Response) => {
     log('收到的 req.body:', req.body);
     const errors = validationResult(req);
-
+    log("errors",errors)
     if (!errors.isEmpty()) {
+        const formattedErrors = errors.array().map((err) => ({
+            msg: err.msg,
+        }));
+
         res.status(400).json({
             success: false,
             message: req.t('欄位驗證錯誤'),
-            errors: errors.array(),
+            errors: formattedErrors,
         });
+        log('❌ 欄位驗證錯誤', formattedErrors);
         return;
     }
 
@@ -122,11 +128,16 @@ export const register = async (req: Request, res: Response) => {
         
     } catch (err) {
         if (err instanceof mongoose.Error.ValidationError) {
+            const mongooseErrors = Object.entries(err.errors).map(([key, val]) => ({
+                field: key,
+                msg: (val as mongoose.Error.ValidatorError).message,
+            }));
+        
             res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
-                message: req.t('欄位驗證錯誤'),
+                message: mongooseErrors[0].msg,
             });
-            log("欄位驗證錯誤");
+            log("欄位驗證錯誤", mongooseErrors);
         } else if (isMongoServerError(err)) {
             res.status(StatusCodes.CONFLICT).json({
                 success: false,
