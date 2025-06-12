@@ -2,6 +2,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { Request, Response } from 'express';
 import streamifier from 'streamifier';
+import User from '../models/user'; 
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -25,27 +26,40 @@ export const uploadToCloudinary = (req: Request, res: Response) => {
         return;
     }
 
-    const stream = cloudinary.uploader.upload_stream(
-        {
-            folder: 'userheadshot',
-        },
-        (error, result) => {
-            if (error || !result) {
-                logError('❌ Cloudinary 上傳錯誤', error);
-                res.status(500).json({ error: '圖片上傳失敗' });
-                return;
-            }
+    try {
+        const stream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'userheadshot',
+            },
+            async (error, result) => {
+                if (error || !result) {
+                    logError('❌ Cloudinary 上傳錯誤', error);
+                    return res.status(500).json({ error: '圖片上傳失敗' });
+                }
 
-            log("✅ 上傳成功：" + result.secure_url);
-            log('🆔 使用者 ID:', req.user?.id);
-            log('👤 使用者帳號:', req.user?.account);
-            log('🧑‍💻 使用者角色:', req.user?.role);
-            res.json({
-                url: result.secure_url,
-                public_id: result.public_id,
-            });
-        },
-    );
+                log("✅ 上傳成功：" + result.secure_url);
+                log('🆔 使用者 ID:', req.user?.id);
 
-    streamifier.createReadStream(req.file.buffer).pipe(stream);
+                try {
+                    await User.findByIdAndUpdate(req.user!.id, {
+                        avatar: result.secure_url,
+                    });
+
+                    res.json({
+                        url: result.secure_url,
+                        public_id: result.public_id,
+                    });
+                } catch (dbError) {
+                    logError('❌ 更新使用者頭像失敗', dbError);
+                    res.status(500).json({ error: '圖片上傳成功但更新頭像失敗' });
+                }
+            },
+        );
+
+        streamifier.createReadStream(req.file.buffer).pipe(stream);
+    } catch (err) {
+        logError('❌ 上傳流程異常', err);
+        res.status(500).json({ error: '圖片處理異常' });
+    }
+
 };

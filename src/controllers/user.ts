@@ -235,7 +235,11 @@ export const login = async (req: Request, res: Response) => {
             token,
             iat: iatFormatted,
             exp: expFormatted,
-            user: { account: user.account, role: user.role },
+            user: { 
+                account: user.account, 
+                role: user.role, 
+                avatar: user.avatar || '',
+            },
         });
 
         await LoginLog.create({

@@ -50,6 +50,10 @@ const schema = new Schema(
             type:[String],
             default: []
         },
+        avatar: {
+            type: String,
+            default: 'https://api.dicebear.com/7.x/avataaars/svg?seed=${username}',
+        },
         cart:{
             type:[cartSchema]
         },
@@ -97,6 +101,7 @@ interface IUser extends mongoose.Document {
     password: string;
     email: string;
     tokens: string[];
+    avatar?: string;
     cart: ICartItem[];
     role: number;
     lastLoginAt?: Date;
