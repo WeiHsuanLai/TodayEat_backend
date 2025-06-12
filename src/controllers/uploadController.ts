@@ -37,6 +37,9 @@ export const uploadToCloudinary = (req: Request, res: Response) => {
             }
 
             log("✅ 上傳成功：" + result.secure_url);
+            log('🆔 使用者 ID:', req.user?.id);
+            log('👤 使用者帳號:', req.user?.account);
+            log('🧑‍💻 使用者角色:', req.user?.role);
             res.json({
                 url: result.secure_url,
                 public_id: result.public_id,

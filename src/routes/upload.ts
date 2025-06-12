@@ -2,6 +2,7 @@
 import express from 'express';
 import multer from 'multer';
 import { uploadToCloudinary  } from '../controllers/uploadController';
+import { authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ const upload = multer({
   limits: { fileSize: 1 * 1024 * 1024 },
 });
 
-router.post('/upload', (req, res, next) => {
+router.post('/upload',authMiddleware, (req, res, next) => {
     upload.single('file')(req, res, (err) => {
         if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
             return res.status(400).json({
