@@ -3,17 +3,24 @@ import { v2 as cloudinary } from 'cloudinary';
 import { Request, Response } from 'express';
 import streamifier from 'streamifier';
 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+    api_key: process.env.CLOUDINARY_API_KEY!,
+    api_secret: process.env.CLOUDINARY_API_SECRET!,
+});
+
 export const uploadToCloudinary = (req: Request, res: Response) => {
+    log("進入上傳")
     if (!req.file) {
         res.status(400).json({ error: '未提供圖片' });
         return;
     }
 
-    const MAX_SIZE = 5 * 1024 * 1024;
+    const MAX_SIZE = 1 * 1024 * 1024;
 
     if (req.file.size > MAX_SIZE) {
         res.status(400).json({
-            error: '圖片過大，請選擇小於 5MB 的圖片',
+            error: '圖片過大，請選擇小於 1MB 的圖片',
         });
         return;
     }
@@ -24,11 +31,12 @@ export const uploadToCloudinary = (req: Request, res: Response) => {
         },
         (error, result) => {
             if (error || !result) {
-                console.error('❌ Cloudinary 上傳錯誤', error);
+                logError('❌ Cloudinary 上傳錯誤', error);
                 res.status(500).json({ error: '圖片上傳失敗' });
                 return;
             }
 
+            log("✅ 上傳成功：" + result.secure_url);
             res.json({
                 url: result.secure_url,
                 public_id: result.public_id,
