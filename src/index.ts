@@ -19,6 +19,7 @@ import i18n from 'i18next';
 import { formatUnixTimestamp } from './utils/formatTime';
 import adminRoutes from './routes/admin';
 import healthRoutes from './routes/health'; //引入路由檢察
+import uploadRoutes from './routes/upload'; //引入路由檢察
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -113,6 +114,7 @@ app.use(helmet());
 app.use('/user', routerUser);
 app.use('/admin', adminRoutes);
 app.use('/health', healthRoutes);
+app.use('/upload', uploadRoutes);
 
 // 測試key
 app.get('/test', (req, res) => {
