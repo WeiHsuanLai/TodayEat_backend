@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, logout,forgotPassword,changePassword,login,deleteAccount } from '../controllers/user';
+import { register, logout,forgotPassword,changePassword,login,deleteAccount, getCurrentUser } from '../controllers/user';
 import { body } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
 import { getLoginLogs } from '../controllers/getLoginLogs';
@@ -24,6 +24,9 @@ router.post(
 
 // 登入
 router.post('/login', login);
+
+// 檢查token 是否過期
+router.get('/me', authMiddleware, getCurrentUser);
 
 // 寄送郵件(目前)
 router.post('/forgot-password', forgotPassword);

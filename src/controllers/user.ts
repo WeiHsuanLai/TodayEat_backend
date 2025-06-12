@@ -255,6 +255,28 @@ export const login = async (req: Request, res: Response) => {
     }
 };
 
+// 檢查 token 是否過期
+export const getCurrentUser = async (req: Request, res: Response) => {
+    const user = req.user;
+
+    if (!user) {
+        res.status(401).json({
+            success: false,
+            message: '未授權',
+        });
+        return
+    }
+
+    res.json({
+        success: true,
+        user: {
+            username: user.account,
+            role: user.role,
+        },
+    });
+};
+
+
 // 登出
 export const logout = async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(' ')[1];
