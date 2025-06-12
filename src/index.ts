@@ -18,6 +18,7 @@ import User from './models/user'; // 引入 mongodb 模型
 import i18n from 'i18next';
 import { formatUnixTimestamp } from './utils/formatTime';
 import adminRoutes from './routes/admin';
+import healthRoutes from './routes/health'; //引入路由檢察
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -111,6 +112,7 @@ app.use(helmet());
 // routes
 app.use('/user', routerUser);
 app.use('/admin', adminRoutes);
+app.use('/health', healthRoutes);
 
 // 測試key
 app.get('/test', (req, res) => {
