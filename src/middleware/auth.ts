@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/user';
 
-interface DecodedUser {
+export interface DecodedUser {
     avatar: string;
     id: string;
     account: string;

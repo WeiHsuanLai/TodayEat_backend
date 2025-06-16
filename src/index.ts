@@ -20,6 +20,7 @@ import { formatUnixTimestamp } from './utils/formatTime';
 import adminRoutes from './routes/admin';
 import healthRoutes from './routes/health'; //引入路由檢察
 import uploadRoutes from './routes/upload'; //引入路由檢察
+import record from './routes/record'
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -115,6 +116,7 @@ app.use('/user', routerUser);
 app.use('/admin', adminRoutes);
 app.use('/health', healthRoutes);
 app.use('/upload', uploadRoutes);
+app.use('/record', record);
 
 // 測試key
 app.get('/test', (req, res) => {
