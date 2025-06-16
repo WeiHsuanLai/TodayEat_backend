@@ -137,4 +137,16 @@ schema.virtual('cartQuantity').get(function(){
     }, 0)
 })
 
+schema.virtual('foodDraws', {
+    ref: 'FoodDrawRecord',
+    localField: '_id',
+    foreignField: 'userId'
+});
+
+schema.virtual('snacks', {
+    ref: 'SnackRecord',
+    localField: '_id',
+    foreignField: 'userId'
+});
+
 export default model<IUser>('User', schema)
