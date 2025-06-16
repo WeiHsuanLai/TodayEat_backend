@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user';
 
 interface DecodedUser {
+    avatar: string;
     id: string;
     account: string;
     role: number;
@@ -71,7 +72,12 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             return
         }
 
-        req.user = decoded;
+        req.user = {
+            id: user.id.toString(),
+            account: user.account,
+            role: user.role,
+            avatar: user.avatar || '',
+        };
         next();
     } catch (err: unknown) {
         logError(`[token 錯誤: ${err instanceof Error ? err.message : '未知錯誤'}]`, err);

@@ -90,7 +90,11 @@ export const register = async (req: Request, res: Response) => {
 
         // 建立 JWT token
         const token = jwt.sign(
-            { id: newUser._id, account: newUser.account, role: newUser.role },
+            { 
+                id: newUser._id, 
+                account: newUser.account, 
+                role: newUser.role,
+                avatar: newUser.avatar || '', },
             process.env.JWT_SECRET || 'secret',
             { expiresIn: '8h' }
         );
@@ -216,7 +220,12 @@ export const login = async (req: Request, res: Response) => {
 
         // 建立token
         const token = jwt.sign(
-            { id: user._id, account: user.account, role: user.role },
+            { 
+                id: user._id, 
+                account: user.account, 
+                role: user.role,
+                avatar: user.avatar || '',
+            },
             process.env.JWT_SECRET || 'secret',
             { expiresIn: '8h' }
         );
@@ -276,6 +285,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
         user: {
             username: user.account,
             role: user.role,
+            avatar: user.avatar || '',
         },
     });
 };
