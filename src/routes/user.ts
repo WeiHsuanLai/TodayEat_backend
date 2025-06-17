@@ -26,7 +26,7 @@ router.post(
 router.post('/login', login);
 
 // 檢查token 是否過期
-router.get('/me', authMiddleware, getCurrentUser);
+router.get('/getCurrentUser', authMiddleware, getCurrentUser);
 
 // 寄送郵件(目前)
 router.post('/forgot-password', forgotPassword);

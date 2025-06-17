@@ -51,23 +51,12 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as DecodedUser;
         const user = await User.findById(decoded.id);
-        if (!user || !Array.isArray(user.tokens) || !(user.tokens as string[]).includes(token)) {
+        if (!user || !Array.isArray(user.tokens) || !user.tokens.includes(token)) {
             log(`驗證失敗：user=${!!user} tokenInList=${user?.tokens.includes(token)}`);
             res.status(401).json({
                 success: false,
                 message: req.t('登入已失效'),
                 reason: 'invalid_token',
-            });
-            return
-        }
-
-        // ✅ 多重登入控制：只允許最新一筆 token 有效
-        const lastToken = user.tokens[user.tokens.length - 1];
-        if (token !== lastToken) {
-            res.status(401).json({
-                success: false,
-                message: req.t('此 token 已被取代，請重新登入'),
-                reason: 'token_superseded',
             });
             return
         }

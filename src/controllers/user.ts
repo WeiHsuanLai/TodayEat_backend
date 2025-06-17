@@ -119,7 +119,7 @@ export const register = async (req: Request, res: Response) => {
             user: {
                 account: newUser.account,
                 // email: newUser.email,
-                // role: newUser.role,
+                role: newUser.role,
             },
         });
 
@@ -248,6 +248,7 @@ export const login = async (req: Request, res: Response) => {
                 account: user.account, 
                 role: user.role, 
                 avatar: user.avatar || '',
+                token: req.headers.authorization?.split(' ')[1],
             },
         });
 
@@ -286,6 +287,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
             username: user.account,
             role: user.role,
             avatar: user.avatar || '',
+            token: req.headers.authorization?.split(' ')[1],
         },
     });
 };
