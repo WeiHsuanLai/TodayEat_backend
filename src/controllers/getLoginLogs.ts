@@ -6,6 +6,7 @@ interface AuthenticatedRequest extends Request {
         id: string;
         account: string;
         role: number;
+        avatar: string; 
     };
 }
 

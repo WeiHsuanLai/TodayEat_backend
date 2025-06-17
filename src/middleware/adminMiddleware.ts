@@ -3,9 +3,10 @@ import UserRole from "../enums/UserRole";
 import jwt, { JwtPayload } from 'jsonwebtoken';
 
 interface MyJwtPayload extends JwtPayload {
-  id: string;
-  account: string;
-  role: number;
+    id: string;
+    account: string;
+    role: number;
+    avatar: string;
 }
 
 
