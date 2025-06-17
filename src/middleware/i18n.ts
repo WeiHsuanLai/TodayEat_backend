@@ -1,12 +1,23 @@
 import i18next from 'i18next';
 import middleware from 'i18next-http-middleware';
 import resourcesToBackend from 'i18next-resources-to-backend';
+import fs from 'fs';
+import path from 'path';
 
 i18next
-  .use(resourcesToBackend((lng: unknown, ns: unknown) => {
-    // 動態載入 locales/zh/translation.ts
-    return import(`../locales/${lng}/${ns}.ts`);
-  }))
+  .use(resourcesToBackend((lng: string, ns: string) => {
+  const filepath = path.join(__dirname, `../locales/${lng}/${ns}.json`);
+  return new Promise((resolve, reject) => {
+    fs.readFile(filepath, 'utf-8', (err, data) => {
+      if (err) return reject(err);
+      try {
+        resolve(JSON.parse(data));
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+}))
   .use(middleware.LanguageDetector)
   .init({
     fallbackLng: 'zh',
