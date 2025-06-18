@@ -95,7 +95,13 @@ cron.schedule('0 */8 * * *', async () => {
 app.use(i18nMiddleware);
 app.use(cors({
   origin(origin, callback) {
-    const allowlist = ['http://localhost:9000', 'http://127.0.0.1:3000', 'https://WeiHsuanLai.github.io', 'http://192.168.0.25:9000','https://todayeat-frontend.onrender.com'];
+    const allowlist = [
+      'http://localhost:9000', 
+      'http://127.0.0.1:3000', 
+      'https://WeiHsuanLai.github.io', 
+      'http://192.168.0.25:9000',
+      'https://todayeat-frontend.onrender.com'
+    ];
     if (!origin || allowlist.includes(origin)) {
       callback(null, true);
     } else {

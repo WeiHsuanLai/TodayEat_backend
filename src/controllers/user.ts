@@ -309,12 +309,9 @@ export const logout = async (req: Request, res: Response) => {
             return;
         }
 
-        const beforeCount = user.tokens.length;
         user.tokens = user.tokens.filter(t => t !== token);
         user.lastLogoutAt = new Date();
         await user.save();
-
-        const removed = beforeCount - user.tokens.length;
 
         await LoginLog.create({
             userId: user._id,
@@ -323,15 +320,12 @@ export const logout = async (req: Request, res: Response) => {
             userAgent: req.headers['user-agent'] || 'unknown',
         });
 
-        if (removed) {
-            log(`👋 使用者登出：帳號=${user.account}`);
-        } else {
-            log(`ℹ️ Token 已不存在（可能早已移除）：帳號=${user.account}`);
-        }
+        log(`👋 使用者登出：帳號=${user.account}`);
 
-        res.json({
+        // 統一簡單回應格式
+        res.status(200).json({
             success: true,
-            message: removed ? req.t('已登出') : req.t('Token 已不存在（可能已被移除）')
+            message: req.t('您已成功登出'),
         });
     } catch (err) {
         logError('🔴 登出錯誤:', err);
