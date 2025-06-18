@@ -13,7 +13,7 @@ export const getAllLoginLogs = async (req: Request, res: Response) => {
         // 定義篩選條件的型別（擴充性佳，支援多欄位）
         interface LoginLogFilter extends Record<string, unknown> {
             $or?: Array<Record<string, unknown>>;
-            createdAt?: {
+            timestamp?: {
                 $gte?: Date;
                 $lte?: Date;
             };
@@ -40,9 +40,9 @@ export const getAllLoginLogs = async (req: Request, res: Response) => {
 
         // 若有任一時間存在則設定 createdAt 篩選區間
         if (fromDate || toDate) {
-            filter.createdAt = {};
-            if (fromDate) filter.createdAt.$gte = fromDate;
-            if (toDate) filter.createdAt.$lte = toDate;
+            filter.timestamp = {};
+            if (fromDate) filter.timestamp.$gte = fromDate;
+            if (toDate) filter.timestamp.$lte = toDate;
         }
 
         // 限制最大回傳筆數，避免過度查詢（上限 500）
@@ -50,7 +50,7 @@ export const getAllLoginLogs = async (req: Request, res: Response) => {
         // 查詢登入紀錄，依建立時間倒序排列，並帶出 userId 的部分資訊
         const logs = await LoginLog.find(filter)
             .populate('userId', 'account email role')
-            .sort({ timestamp: sortDirection }) 
+            .sort({ timestamp: sortDirection })
             .limit(max);
 
         // 成功回傳資料
