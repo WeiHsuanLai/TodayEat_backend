@@ -28,7 +28,8 @@ i18next
       order: ['header', 'querystring', 'cookie'],
       caches: false
     },
-    debug: process.env.NODE_ENV === 'development'
+    // debug: process.env.NODE_ENV === 'development'
+    debug: process.env.NODE_ENV === 'production'
   });
 
 export default middleware.handle(i18next);

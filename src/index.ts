@@ -162,7 +162,7 @@ async function startServer() {
         log(i18n.t('✅ 資料庫連線成功'));
         
         app.listen(PORT, () => {
-            log(i18n.t('🚀 伺服器啟動：port ', { port: PORT }));
+            log(i18n.t('🚀 伺服器啟動：port', { port: PORT }));
         });
     } catch (err) {
         logError(i18n.t('❌ 資料庫連線失敗：'), err);

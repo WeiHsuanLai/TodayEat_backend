@@ -13,7 +13,7 @@
     "未知錯誤":"Unknown Error",
     "❌ 缺少環境變數 DB_URL":"❌ Missing environment variable: DB_URL",
     "✅ 資料庫連線成功":"✅ 資料庫連線成功",
-    "🚀 伺服器啟動：port ":"🚀 server_started ",
+    "🚀 伺服器啟動：port":"🚀 server_started",
     "❌ 資料庫連線失敗：":"❌ Failed to connect to the database:",
 
     "欄位驗證錯誤":"Field validation failed",
