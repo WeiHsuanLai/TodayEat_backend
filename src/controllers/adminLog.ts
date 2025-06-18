@@ -50,7 +50,7 @@ export const getAllLoginLogs = async (req: Request, res: Response) => {
         // 查詢登入紀錄，依建立時間倒序排列，並帶出 userId 的部分資訊
         const logs = await LoginLog.find(filter)
             .populate('userId', 'account email role')
-            .sort({ createdAt: sortDirection })
+            .sort({ timestamp: sortDirection }) 
             .limit(max);
 
         // 成功回傳資料
