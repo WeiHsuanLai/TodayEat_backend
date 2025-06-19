@@ -39,7 +39,7 @@ export const drawFood = async (req: RequestWithUser<DrawFoodInput>, res: Respons
     try {
         const result = await FoodDrawRecord.findOneAndUpdate(
             { userId: id, date, meal },
-            { food, updatedAt: new Date() },
+            { food },
             { upsert: true, new: true }
         );
         res.json({ message: '抽餐成功', data: result });
@@ -60,7 +60,7 @@ export const getTodayFoodDraws = async (req: RequestWithUser, res: Response) => 
     const date = getTodayString();
 
     try {
-        const records = await FoodDrawRecord.find({ userId: id, date });
+        const records = await FoodDrawRecord.find({ userId: id, date }).sort({ createdAt: -1 });
         const meals: FoodDraw['meal'][] = ['breakfast', 'lunch', 'dinner', 'midnight'];
         const result: Record<FoodDraw['meal'], string | null> = {
             breakfast: null,
@@ -74,6 +74,23 @@ export const getTodayFoodDraws = async (req: RequestWithUser, res: Response) => 
         res.json({ date, meals: result });
     } catch (error) {
         console.error('❌ getTodayFoodDraws error:', error);
+        res.status(500).json({ message: '伺服器錯誤', error: String(error) });
+    }
+};
+
+export const getAllFoodDraws = async (req: RequestWithUser, res: Response) => {
+    if (!req.user) {
+        res.status(401).json({ message: '未登入' });
+        return;
+    }
+
+    const { id } = req.user;
+
+    try {
+        const records = await FoodDrawRecord.find({ userId: id }).sort({ createdAt: -1 });
+        res.json({ count: records.length, records });
+    } catch (error) {
+        console.error('❌ getAllFoodDraws error:', error);
         res.status(500).json({ message: '伺服器錯誤', error: String(error) });
     }
 };
@@ -93,7 +110,7 @@ export const getFoodDrawsByDate = async (req: RequestWithUser, res: Response) =>
     }
 
     try {
-        const records = await FoodDrawRecord.find({ userId: id, date });
+        const records = await FoodDrawRecord.find({ userId: id, date }).sort({ createdAt: -1 });
         res.json(records);
     } catch (error) {
         console.error('❌ getFoodDrawsByDate error:', error);

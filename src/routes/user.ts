@@ -1,5 +1,16 @@
 import express from 'express';
-import { register, logout,forgotPassword,changePassword,login,deleteAccount, getCurrentUser } from '../controllers/user';
+import { 
+    register,
+    logout,
+    forgotPassword,
+    changePassword,
+    login,
+    deleteAccount,
+    getCurrentUser,
+    getCustomItems,
+    addCustomItem,
+    deleteCustomItem
+} from '../controllers/user';
 import { body } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
 import { getLoginLogs } from '../controllers/getLoginLogs';
@@ -51,5 +62,13 @@ router.post('/change-password', authMiddleware, changePassword);
 // 註銷帳號
 router.delete('/delete', authMiddleware, deleteAccount); 
 
+// 取得料理項目
+router.get('/custom-items', authMiddleware, getCustomItems);
+
+// 加入自訂料理
+router.post('/custom-items', authMiddleware, addCustomItem);
+
+// 刪除料理
+router.delete('/custom-items', authMiddleware, deleteCustomItem);
 
 export default router; 

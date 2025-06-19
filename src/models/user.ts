@@ -1,3 +1,4 @@
+// models/user.ts
 import mongoose, { Schema, model, Query } from "mongoose";
 import validator from "validator";
 import bcrypt from 'bcryptjs';
@@ -57,6 +58,11 @@ const schema = new Schema(
         cart:{
             type:[cartSchema]
         },
+        customItems: {
+            type: Map,
+            of: [String],
+            default: {}
+        },
         role:{
             type:Number,
             default: UserRole.USER,
@@ -106,6 +112,7 @@ interface IUser extends mongoose.Document {
     role: number;
     lastLoginAt?: Date;
     lastLogoutAt?: Date; 
+    customItems: Map<string, string[]>;
     isModified(field: string): boolean;
 }
 

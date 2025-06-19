@@ -21,6 +21,7 @@ import adminRoutes from './routes/admin';
 import healthRoutes from './routes/health'; //引入路由檢察
 import uploadRoutes from './routes/upload'; //引入路由檢察
 import record from './routes/record'
+import prizeRouter from './routes/prize';
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -123,6 +124,7 @@ app.use('/admin', adminRoutes);
 app.use('/health', healthRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/record', record);
+app.use('/prizes', prizeRouter);
 
 // 測試key
 app.get('/test', (req, res) => {

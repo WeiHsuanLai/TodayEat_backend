@@ -1,3 +1,4 @@
+// controllers/user.ts
 import { Request, Response } from 'express'; // 顯式指定 req, res 型別
 import { StatusCodes } from 'http-status-codes'; // HTTP 狀態碼
 import User from '../models/user'; // Mongoose 資料模型
@@ -10,6 +11,7 @@ import { formatUnixTimestamp } from '../utils/formatTime'; // 時間轉換工具
 import { sendResetPasswordEmail } from '../utils/mailer'; // 傳送 emaal
 import  LoginLog  from '../models/LoginLog'; // 查詢登入登出紀錄
 import { log } from 'console';
+import { Prize } from '../models/Prize';
 
 // 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
@@ -87,6 +89,19 @@ export const register = async (req: Request, res: Response) => {
             email: req.body.email,
             role,
         });
+
+        const defaultPrizes = await Prize.find();
+        if (!defaultPrizes.length) {
+            log('⚠️ 無預設料理資料，customItems 將為空');
+        }
+        log('🎁 預設 customItems:', [...newUser.customItems.entries()]);
+        const customItemsMap = new Map<string, string[]>();
+
+        for (const prize of defaultPrizes) {
+            customItemsMap.set(prize.label, [...prize.items]);
+        }
+
+        newUser.customItems = customItemsMap;
 
         // 建立 JWT token
         const token = jwt.sign(
@@ -169,7 +184,7 @@ export const deleteAccount = async (req: Request, res: Response) => {
 
         if (!result) {
             res.status(404).json({ message: '找不到使用者' });
-            return
+            return;
         }
 
         res.status(200).json({ message: '帳號已成功註銷' });
@@ -270,7 +285,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
             success: false,
             message: '未授權',
         });
-        return
+        return;
     }
 
     res.json({
@@ -332,19 +347,19 @@ export const changePassword = async (req: Request, res: Response) => {
 
     if (!userId || !currentPassword || !newPassword) {
         res.status(400).json({ success: false, message: req.t('請填寫完整欄位') });
-        return
+        return;
     }
 
     const user = await User.findById(userId);
     if (!user) {
         res.status(404).json({ success: false, message: req.t('找不到使用者') });
-        return
+        return;
     }
 
     const isValid = await bcrypt.compare(currentPassword, user.password);
     if (!isValid) {
         res.status(401).json({ success: false, message: req.t('目前密碼錯誤') });
-        return
+        return;
     }
 
     user.password = newPassword;
@@ -366,3 +381,90 @@ export const forgotPassword = async (req: Request, res: Response) => {
         res.status(500).json({ message: '寄信失敗' });
     }
 };
+
+// 取得使用者自訂項目
+export const getCustomItems = async (req: Request, res: Response) => {
+    try {
+        const user = await User.findById(req.user?.id).select('customItems');
+        if (!user) {
+            res.status(404).json({ success: false, message: req.t('找不到使用者') });
+            return;
+        }
+
+        res.json({ success: true, customItems: user.customItems || {} });
+    } catch (err) {
+        console.error('[getCustomItems] 發生錯誤', err);
+        res.status(500).json({ success: false, message: req.t('取得自定料理失敗') });
+    }
+};
+
+// 新增使用者自訂料理項目
+export const addCustomItem = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const { label, item } = req.body;
+
+    if (!label || !item) {
+        res.status(400).json({ success: false, message: req.t('label 與 item 為必填') });
+        return;
+    }
+
+    try {
+        const user = await User.findById(userId);
+        if (!user){
+            res.status(404).json({ success: false, message: req.t('找不到使用者') });
+            return;
+        }  
+
+        const current = user.customItems?.get(label) || [];
+        if (!current.includes(item)) {
+            current.push(item);
+            user.customItems?.set(label, current);
+            await user.save();
+        }
+
+        res.json({ success: true, message: req.t('已新增自定料理項目'), items: current });
+    } catch (err) {
+        console.error('[addCustomItem] 發生錯誤', err);
+        res.status(500).json({ success: false, message: req.t('儲存失敗') });
+    }
+};
+
+export const deleteCustomItem = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const { label, item } = req.body;
+
+    if (!label || !item) {
+        res.status(400).json({ success: false, message: req.t('label 與 item 為必填') });
+        return;
+    }
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            res.status(404).json({ success: false, message: req.t('找不到使用者') });
+            return;
+        }
+
+        const current = user.customItems?.get(label) || [];
+        const filtered = current.filter((i) => i !== item);
+
+        if (filtered.length === current.length) {
+            res.status(404).json({ success: false, message: req.t('找不到指定項目') });
+            return;
+        }
+
+        if (filtered.length === 0) {
+          user.customItems.delete(label); // 全部刪完就移除整個分類
+        } else {
+            user.customItems.set(label, filtered);
+        }
+
+        await user.save();
+
+        res.json({ success: true, message: req.t('已刪除項目'), items: filtered });
+    } catch (err) {
+        console.error('[deleteCustomItem] 發生錯誤', err);
+        res.status(500).json({ success: false, message: req.t('刪除失敗') });
+    }
+};
+

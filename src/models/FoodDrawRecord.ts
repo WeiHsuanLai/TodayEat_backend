@@ -26,19 +26,18 @@ const FoodDrawRecordSchema = new Schema({
         match: /^\d{4}-\d{2}-\d{2}$/ // 確保符合日期格式
     },
 
-    // 最後更新時間
-    updatedAt: {
-        type: Date,
-        default: Date.now
-    },
-
     // 備註欄位（選填）
     note: {
         type: String,
         default: '',
         trim: true
     }
-},{ versionKey: false });
+},
+{ 
+    versionKey: false,
+    timestamps: true 
+}
+);
 
 // 建立複合索引：每人每日每餐只允許一筆
 FoodDrawRecordSchema.index({ userId: 1, date: 1, meal: 1 }, { unique: true });
