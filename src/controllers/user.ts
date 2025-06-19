@@ -103,22 +103,14 @@ export const register = async (req: Request, res: Response) => {
         newUser.tokens = [token];
         newUser.lastLoginAt = new Date();
         await newUser.save();
-
-        // const decoded = jwt.decode(token) as JwtPayload;
-        // const iatFormatted = formatUnixTimestamp(decoded.iat);
-        // const expFormatted = formatUnixTimestamp(decoded.exp);
-
         log('✅ 新使用者已建立並自動登入:', newUser);
 
         res.status(StatusCodes.OK).json({
             success: true,
             message: req.t('註冊成功'),
             token,
-            // iat: iatFormatted,
-            // exp: expFormatted,
             user: {
                 account: newUser.account,
-                // email: newUser.email,
                 role: newUser.role,
             },
         });
