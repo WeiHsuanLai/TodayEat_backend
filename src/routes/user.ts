@@ -9,11 +9,14 @@ import {
     getCurrentUser,
     getCustomItems,
     addCustomItem,
-    deleteCustomItem
+    deleteCustomItem,
+    addCustomLabel,
+    deleteCustomLabel
 } from '../controllers/user';
 import { body } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
 import { getLoginLogs } from '../controllers/getLoginLogs';
+import { resetCustomItems } from '../controllers/customItemController';
 
 const router = express.Router();
 
@@ -70,5 +73,14 @@ router.post('/custom-items', authMiddleware, addCustomItem);
 
 // 刪除料理
 router.delete('/custom-items', authMiddleware, deleteCustomItem);
+
+// 新增料理種類
+router.post('/custom-item/label', authMiddleware, addCustomLabel);
+
+// 刪除料理種類
+router.delete('/custom-item/label', authMiddleware, deleteCustomLabel);
+
+// 重置所有料理
+router.post('/custom-items/reset', authMiddleware, resetCustomItems);
 
 export default router; 

@@ -468,3 +468,71 @@ export const deleteCustomItem = async (req: Request, res: Response) => {
     }
 };
 
+// 刪除整個自訂料理種類（label）
+export const deleteCustomLabel = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const { label } = req.body;
+
+    if (!label) {
+        res.status(400).json({ success: false, message: req.t('label 為必填') });
+        return;
+    }
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            res.status(404).json({ success: false, message: req.t('找不到使用者') });
+            return;
+        }
+
+        const existed = user.customItems.has(label);
+        if (!existed) {
+            res.status(404).json({ success: false, message: req.t('找不到指定料理種類') });
+            return;
+        }
+
+        user.customItems.delete(label);
+        await user.save();
+
+        res.json({ success: true, message: req.t('已刪除料理種類') });
+    } catch (err) {
+        console.error('[deleteCustomLabel] 發生錯誤', err);
+        res.status(500).json({ success: false, message: req.t('刪除料理種類失敗') });
+    }
+};
+
+// 新增料理種類（label），預設項目可為空
+export const addCustomLabel = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const { label, items } = req.body; // items 可選，預設為空陣列
+
+    if (!label) {
+        res.status(400).json({ success: false, message: req.t('label 為必填') });
+        return;
+    }
+
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            res.status(404).json({ success: false, message: req.t('找不到使用者') });
+            return;
+        }
+
+        if (user.customItems.has(label)) {
+            res.status(409).json({ success: false, message: req.t('料理種類已存在') });
+            return;
+        }
+
+        const safeItems = Array.isArray(items) ? items.filter(i => typeof i === 'string') : [];
+
+        user.customItems.set(label, safeItems);
+        await user.save();
+
+        res.json({ success: true, message: req.t('已新增料理種類'), label, items: safeItems });
+    } catch (err) {
+        console.error('[addCustomLabel] 發生錯誤', err);
+        res.status(500).json({ success: false, message: req.t('新增料理種類失敗') });
+    }
+};
+
+
