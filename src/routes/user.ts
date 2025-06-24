@@ -9,9 +9,9 @@ import {
     getCurrentUser,
     getCustomItems,
     addCustomItem,
-    deleteCustomItem,
+    deleteCustomItems,
     addCustomLabel,
-    deleteCustomLabel
+    deleteCustomLabels
 } from '../controllers/user';
 import { body } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
@@ -72,13 +72,13 @@ router.get('/custom-items', authMiddleware, getCustomItems);
 router.post('/custom-items', authMiddleware, addCustomItem);
 
 // 刪除料理
-router.delete('/custom-items', authMiddleware, deleteCustomItem);
+router.delete('/custom-items', authMiddleware, deleteCustomItems);
 
 // 新增料理種類
 router.post('/custom-item/label', authMiddleware, addCustomLabel);
 
 // 刪除料理種類
-router.delete('/custom-item/label', authMiddleware, deleteCustomLabel);
+router.delete('/custom-item/label', authMiddleware, deleteCustomLabels);
 
 // 重置所有料理
 router.post('/custom-items/reset', authMiddleware, resetCustomItems);

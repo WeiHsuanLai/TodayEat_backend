@@ -429,12 +429,13 @@ export const addCustomItem = async (req: Request, res: Response) => {
     }
 };
 
-export const deleteCustomItem = async (req: Request, res: Response) => {
+// 刪除單一料理
+export const deleteCustomItems = async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    const { label, item } = req.body;
+    const { label, items } = req.body;
 
-    if (!label || !item) {
-        res.status(400).json({ success: false, message: req.t('label 與 item 為必填') });
+    if (!label || !Array.isArray(items) || items.length === 0) {
+        res.status(400).json({ success: false, message: req.t('label 與 items 為必填') });
         return;
     }
 
@@ -446,15 +447,15 @@ export const deleteCustomItem = async (req: Request, res: Response) => {
         }
 
         const current = user.customItems?.get(label) || [];
-        const filtered = current.filter((i) => i !== item);
+        const filtered = current.filter((i) => !items.includes(i));
 
         if (filtered.length === current.length) {
-            res.status(404).json({ success: false, message: req.t('找不到指定項目') });
+            res.status(404).json({ success: false, message: req.t('未找到要刪除的項目') });
             return;
         }
 
         if (filtered.length === 0) {
-          user.customItems.delete(label); // 全部刪完就移除整個分類
+            user.customItems.delete(label);
         } else {
             user.customItems.set(label, filtered);
         }
@@ -463,18 +464,19 @@ export const deleteCustomItem = async (req: Request, res: Response) => {
 
         res.json({ success: true, message: req.t('已刪除項目'), items: filtered });
     } catch (err) {
-        console.error('[deleteCustomItem] 發生錯誤', err);
+        console.error('[deleteCustomItems] 發生錯誤', err);
         res.status(500).json({ success: false, message: req.t('刪除失敗') });
     }
 };
 
-// 刪除整個自訂料理種類（label）
-export const deleteCustomLabel = async (req: Request, res: Response) => {
-    const userId = req.user?.id;
-    const { label } = req.body;
 
-    if (!label) {
-        res.status(400).json({ success: false, message: req.t('label 為必填') });
+// 刪除整個自訂料理種類（label）
+export const deleteCustomLabels = async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const { labels } = req.body; // 支援 labels: string[]
+
+    if (!Array.isArray(labels) || labels.length === 0) {
+        res.status(400).json({ success: false, message: req.t('labels 為必填') });
         return;
     }
 
@@ -485,21 +487,32 @@ export const deleteCustomLabel = async (req: Request, res: Response) => {
             return;
         }
 
-        const existed = user.customItems.has(label);
-        if (!existed) {
-            res.status(404).json({ success: false, message: req.t('找不到指定料理種類') });
+        const deleted: string[] = [];
+        for (const label of labels) {
+            if (user.customItems.has(label)) {
+                user.customItems.delete(label);
+                deleted.push(label);
+            }
+        }
+
+        if (deleted.length === 0) {
+            res.status(404).json({ success: false, message: req.t('找不到任何指定料理種類') });
             return;
         }
 
-        user.customItems.delete(label);
         await user.save();
 
-        res.json({ success: true, message: req.t('已刪除料理種類') });
+        res.json({
+            success: true,
+            message: req.t('已刪除料理種類'),
+            deleted,
+        });
     } catch (err) {
-        console.error('[deleteCustomLabel] 發生錯誤', err);
+        console.error('[deleteCustomLabels] 發生錯誤', err);
         res.status(500).json({ success: false, message: req.t('刪除料理種類失敗') });
     }
 };
+
 
 // 新增料理種類（label），預設項目可為空
 export const addCustomLabel = async (req: Request, res: Response) => {
