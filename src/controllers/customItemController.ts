@@ -28,10 +28,10 @@ export const resetCustomItems = async (req: Request, res: Response) => {
             customItemsMap.set(prize.label, [...prize.items]);
         }
 
-        user.customItems = customItemsMap;
+        user.customItemsByCuisine = customItemsMap;
         await user.save();
 
-        res.json({ success: true, message: req.t('已重置為預設料理'), customItems: user.customItems });
+        res.json({ success: true, message: req.t('已重置為預設料理'), customItems: user.customItemsByCuisine });
     } catch (err) {
         console.error('[resetCustomItems] 發生錯誤', err);
         res.status(500).json({ success: false, message: req.t('重置失敗') });

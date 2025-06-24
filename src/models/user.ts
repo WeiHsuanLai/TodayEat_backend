@@ -58,9 +58,14 @@ const schema = new Schema(
         cart:{
             type:[cartSchema]
         },
-        customItems: {
+        customItemsByMeal: {
             type: Map,
-            of: [String],
+            of: [String], // e.g. breakfast: ['飯糰', '蛋餅']
+            default: {}
+        },
+        customItemsByCuisine: {
+            type: Map,
+            of: [String], // e.g. 日式料理: ['拉麵', '壽司']
             default: {}
         },
         role:{
@@ -112,7 +117,8 @@ interface IUser extends mongoose.Document {
     role: number;
     lastLoginAt?: Date;
     lastLogoutAt?: Date; 
-    customItems: Map<string, string[]>;
+    customItemsByMeal: Map<string, string[]>;
+    customItemsByCuisine: Map<string, string[]>;
     isModified(field: string): boolean;
 }
 

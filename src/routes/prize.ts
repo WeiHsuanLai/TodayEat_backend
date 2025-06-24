@@ -37,14 +37,14 @@ router.post('/', async (req, res) => {
     }
 
     // 如果是單筆物件
-    const { label, items, imageUrl, mealTimes } = data;
+    const { label, items, imageUrl } = data;
     if (!label || !Array.isArray(items)) {
         res.status(400).json({ error: 'label 與 items 為必填欄位' });
         return;
     }
 
     try {
-        const newPrize = await Prize.create({ label, items, imageUrl, mealTimes });
+        const newPrize = await Prize.create({ label, items, imageUrl });
         res.status(201).json(newPrize);
         return;
     } catch (err) {

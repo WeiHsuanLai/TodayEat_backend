@@ -94,14 +94,14 @@ export const register = async (req: Request, res: Response) => {
         if (!defaultPrizes.length) {
             log('⚠️ 無預設料理資料，customItems 將為空');
         }
-        log('🎁 預設 customItems:', [...newUser.customItems.entries()]);
+        log('🎁 預設 customItems:', [...newUser.customItemsByCuisine.entries()]);
         const customItemsMap = new Map<string, string[]>();
 
         for (const prize of defaultPrizes) {
             customItemsMap.set(prize.label, [...prize.items]);
         }
 
-        newUser.customItems = customItemsMap;
+        newUser.customItemsByCuisine = customItemsMap;
 
         // 建立 JWT token
         const token = jwt.sign(
@@ -385,13 +385,13 @@ export const forgotPassword = async (req: Request, res: Response) => {
 // 取得使用者自訂項目
 export const getCustomItems = async (req: Request, res: Response) => {
     try {
-        const user = await User.findById(req.user?.id).select('customItems');
+        const user = await User.findById(req.user?.id).select('customItemsByCuisine');
         if (!user) {
             res.status(404).json({ success: false, message: req.t('找不到使用者') });
             return;
         }
 
-        res.json({ success: true, customItems: user.customItems || {} });
+        res.json({ success: true, customItems: user.customItemsByCuisine || {} });
     } catch (err) {
         console.error('[getCustomItems] 發生錯誤', err);
         res.status(500).json({ success: false, message: req.t('取得自定料理失敗') });
@@ -415,10 +415,10 @@ export const addCustomItem = async (req: Request, res: Response) => {
             return;
         }  
 
-        const current = user.customItems?.get(label) || [];
+        const current = user.customItemsByCuisine?.get(label) || [];
         if (!current.includes(item)) {
             current.push(item);
-            user.customItems?.set(label, current);
+            user.customItemsByCuisine?.set(label, current);
             await user.save();
         }
 
@@ -446,7 +446,7 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
             return;
         }
 
-        const current = user.customItems?.get(label) || [];
+        const current = user.customItemsByCuisine?.get(label) || [];
         const filtered = current.filter((i) => !items.includes(i));
 
         if (filtered.length === current.length) {
@@ -455,9 +455,9 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
         }
 
         if (filtered.length === 0) {
-            user.customItems.delete(label);
+            user.customItemsByCuisine.delete(label);
         } else {
-            user.customItems.set(label, filtered);
+            user.customItemsByCuisine.set(label, filtered);
         }
 
         await user.save();
@@ -489,8 +489,8 @@ export const deleteCustomLabels = async (req: Request, res: Response) => {
 
         const deleted: string[] = [];
         for (const label of labels) {
-            if (user.customItems.has(label)) {
-                user.customItems.delete(label);
+            if (user.customItemsByCuisine.has(label)) {
+                user.customItemsByCuisine.delete(label);
                 deleted.push(label);
             }
         }
@@ -531,14 +531,14 @@ export const addCustomLabel = async (req: Request, res: Response) => {
             return;
         }
 
-        if (user.customItems.has(label)) {
+        if (user.customItemsByCuisine.has(label)) {
             res.status(409).json({ success: false, message: req.t('料理種類已存在') });
             return;
         }
 
         const safeItems = Array.isArray(items) ? items.filter(i => typeof i === 'string') : [];
 
-        user.customItems.set(label, safeItems);
+        user.customItemsByCuisine.set(label, safeItems);
         await user.save();
 
         res.json({ success: true, message: req.t('已新增料理種類'), label, items: safeItems });
