@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { Prize } from '../models/Prize';
+import { adminMiddleware } from '../middleware/adminMiddleware';
 
 const router = Router();
 
@@ -15,7 +16,7 @@ router.get('/', async (req, res) => {
 });
 
 // 新增一個獎項（可選功能）
-router.post('/', async (req, res) => {
+router.post('/', adminMiddleware, async (req, res) => {
     const data = req.body;
 
     // 如果是多筆陣列
