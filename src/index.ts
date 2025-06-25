@@ -22,6 +22,7 @@ import healthRoutes from './routes/health'; //引入路由檢察
 import uploadRoutes from './routes/upload'; //引入路由檢察
 import record from './routes/record'
 import cuisineTypeRouter from './routes/cuisineType';
+import mealPeriodPresetRouter from './routes/mealPeriodPreset';
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -125,6 +126,7 @@ app.use('/health', healthRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/record', record);
 app.use('/cuisineTypes', cuisineTypeRouter);
+app.use('/mealPresets', mealPeriodPresetRouter);
 
 // 測試key
 app.get('/test', (req, res) => {

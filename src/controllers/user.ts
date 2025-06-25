@@ -381,7 +381,8 @@ export const getCustomItems = async (req: Request, res: Response) => {
             type === 'meal' ? 'customItemsByMeal' : 'customItemsByCuisine'
         );
         if (!user) {
-            return res.status(404).json({ success: false, message: req.t('找不到使用者') });
+            res.status(404).json({ success: false, message: req.t('找不到使用者') });
+            return;
         }
 
         // 動態載入預設資料
@@ -399,9 +400,11 @@ export const getCustomItems = async (req: Request, res: Response) => {
         if (label) {
             const items = merged.get(label);
             if (!items || items.length === 0) {
-                return res.status(404).json({ success: false, message: req.t('找不到該分類') });
+                res.status(404).json({ success: false, message: req.t('找不到該分類') });
+                return;
             }
-            return res.json({ success: true, filterType: type, label, items });
+            res.json({ success: true, filterType: type, label, items });
+            return;
         }
 
         const sortedMerged = [...merged.entries()]
