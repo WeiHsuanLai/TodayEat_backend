@@ -373,33 +373,54 @@ export const forgotPassword = async (req: Request, res: Response) => {
 // 取得使用者自訂項目
 export const getCustomItems = async (req: Request, res: Response) => {
     try {
+        const label = req.query.label?.toString()?.trim();
         const user = await User.findById(req.user?.id).select('customItemsByCuisine');
         if (!user) {
             res.status(404).json({ success: false, message: req.t('找不到使用者') });
             return;
         }
 
-        const defaultPrizes = await Prize.find(); // 所有預設分類與料理
+        const defaultPrizes = await Prize.find();
         const defaultMap = new Map(defaultPrizes.map(p => [p.label, p.items]));
         const userMap = user.customItemsByCuisine;
-        const merged = mergeCustomWithDefault(userMap, defaultMap); //合併使用者客製與系統預設
+        const merged = mergeCustomWithDefault(userMap, defaultMap);
 
-        const sortedMerged = [...merged.entries()].sort(([labelA], [labelB]) => {
-            const isDefaultA = defaultMap.has(labelA);
-            const isDefaultB = defaultMap.has(labelB);
+        if (label) {
+            const items = merged.get(label);
+            // 如果是 undefined 或空陣列 → 回傳找不到
+            if (!items || items.length === 0) {
+                res.status(404).json({ success: false, message: req.t('找不到該分類') });
+                return;
+            }
+        
+            res.json({
+                success: true,
+                filterType: 'cuisine',
+                label,
+                items,
+            });
+            return;
+        }
 
-            if (!isDefaultA && isDefaultB) return -1;
-            if (isDefaultA && !isDefaultB) return 1;
 
-            return labelA.localeCompare(labelB, 'zh-Hant');
-        });
+        // 回傳全部（原本邏輯）
+        const sortedMerged = [...merged.entries()]
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            .filter(([_, items]) => items.length > 0)
+            .sort(([labelA], [labelB]) => {
+                const isDefaultA = defaultMap.has(labelA);
+                const isDefaultB = defaultMap.has(labelB);
+                if (!isDefaultA && isDefaultB) return -1;
+                if (isDefaultA && !isDefaultB) return 1;
+                return labelA.localeCompare(labelB, 'zh-Hant');
+            });
 
         const orderedMap = new Map(sortedMerged);
 
         res.json({ 
             success: true,
-            filterType: 'cuisine', // ⬅️ 給前端判斷類型用
-            customItems: Object.fromEntries(orderedMap)
+            filterType: 'cuisine',
+            customItems: Object.fromEntries(orderedMap),
         });
     } catch (err) {
         console.error('[getCustomItems] 發生錯誤', err);
@@ -407,9 +428,7 @@ export const getCustomItems = async (req: Request, res: Response) => {
     }
 };
 
-
 // 新增使用者自訂料理項目
-
 export const addCustomItem = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     const { label, item } = req.body;
@@ -507,7 +526,7 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
 // 刪除整個自訂料理種類（label）
 export const deleteCustomLabels = async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    const { labels } = req.body; // 支援 labels: string[]
+    const { labels } = req.body;
 
     if (!Array.isArray(labels) || labels.length === 0) {
         res.status(400).json({ success: false, message: req.t('labels 為必填') });
@@ -521,25 +540,24 @@ export const deleteCustomLabels = async (req: Request, res: Response) => {
             return;
         }
 
+        const defaultPrizes = await Prize.find();
+        const defaultLabelSet = new Set(defaultPrizes.map(p => p.label));
         const deleted: string[] = [];
 
         for (const label of labels) {
-            // ⏬ 若沒 override 過，先 fallback 預設值進去再刪除
-            if (!user.customItemsByCuisine.has(label)) {
-                const preset = await Prize.findOne({ label });
-                if (preset) {
-                    user.customItemsByCuisine.set(label, [...preset.items]);
-                }
-            }
-
-            if (user.customItemsByCuisine.has(label)) {
+            if (defaultLabelSet.has(label)) {
+                // 是預設分類 → 設為空陣列代表使用者想隱藏它
+                user.customItemsByCuisine.set(label, []);
+                deleted.push(label);
+            } else if (user.customItemsByCuisine.has(label)) {
+                // 是使用者新增的自訂分類 → 直接刪除
                 user.customItemsByCuisine.delete(label);
                 deleted.push(label);
             }
         }
 
         if (deleted.length === 0) {
-            res.status(404).json({ success: false, message: req.t('找不到任何指定料理種類') });
+            res.status(404).json({ success: false, message: req.t('找不到任何可刪除的料理種類') });
             return;
         }
 
@@ -555,8 +573,6 @@ export const deleteCustomLabels = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: req.t('刪除料理種類失敗') });
     }
 };
-
-
 
 // 新增料理種類（label），預設項目可為空
 export const addCustomLabel = async (req: Request, res: Response) => {
