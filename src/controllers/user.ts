@@ -13,6 +13,7 @@ import  LoginLog  from '../models/LoginLog'; // 查詢登入登出紀錄
 import { log } from 'console';
 import { CuisineType } from '../models/CuisineType';
 import { mergeCustomWithDefault } from '../utils/mergeCustomWithDefault';
+import { MealPeriodPreset } from '../models/MealPeriodPreset';
 
 // 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
@@ -373,60 +374,58 @@ export const forgotPassword = async (req: Request, res: Response) => {
 // 取得使用者自訂項目
 export const getCustomItems = async (req: Request, res: Response) => {
     try {
+        const type = req.query.type?.toString()?.trim() ?? 'cuisine'; // 預設為 cuisine
         const label = req.query.label?.toString()?.trim();
-        const user = await User.findById(req.user?.id).select('customItemsByCuisine');
+
+        const user = await User.findById(req.user?.id).select(
+            type === 'meal' ? 'customItemsByMeal' : 'customItemsByCuisine'
+        );
         if (!user) {
-            res.status(404).json({ success: false, message: req.t('找不到使用者') });
-            return;
+            return res.status(404).json({ success: false, message: req.t('找不到使用者') });
         }
 
-        const defaultCuisineTypes = await CuisineType.find();
-        const defaultMap = new Map(defaultCuisineTypes.map(p => [p.label, p.items]));
-        const userMap = user.customItemsByCuisine;
+        // 動態載入預設資料
+        let defaultEntries: { label: string; items: string[] }[] = [];
+        if (type === 'meal') {
+            defaultEntries = await MealPeriodPreset.find(); // 早餐/午餐...
+        } else {
+            defaultEntries = await CuisineType.find(); // 台式/日式...
+        }
+
+        const defaultMap = new Map(defaultEntries.map(p => [p.label, p.items]));
+        const userMap = type === 'meal' ? user.customItemsByMeal : user.customItemsByCuisine;
         const merged = mergeCustomWithDefault(userMap, defaultMap);
 
         if (label) {
             const items = merged.get(label);
-            // 如果是 undefined 或空陣列 → 回傳找不到
             if (!items || items.length === 0) {
-                res.status(404).json({ success: false, message: req.t('找不到該分類') });
-                return;
+                return res.status(404).json({ success: false, message: req.t('找不到該分類') });
             }
-        
-            res.json({
-                success: true,
-                filterType: 'cuisine',
-                label,
-                items,
-            });
-            return;
+            return res.json({ success: true, filterType: type, label, items });
         }
 
-
-        // 回傳全部（原本邏輯）
         const sortedMerged = [...merged.entries()]
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             .filter(([_, items]) => items.length > 0)
-            .sort(([labelA], [labelB]) => {
-                const isDefaultA = defaultMap.has(labelA);
-                const isDefaultB = defaultMap.has(labelB);
+            .sort(([a], [b]) => {
+                const isDefaultA = defaultMap.has(a);
+                const isDefaultB = defaultMap.has(b);
                 if (!isDefaultA && isDefaultB) return -1;
                 if (isDefaultA && !isDefaultB) return 1;
-                return labelA.localeCompare(labelB, 'zh-Hant');
+                return a.localeCompare(b, 'zh-Hant');
             });
 
-        const orderedMap = new Map(sortedMerged);
-
-        res.json({ 
+        res.json({
             success: true,
-            filterType: 'cuisine',
-            customItems: Object.fromEntries(orderedMap),
+            filterType: type,
+            customItems: Object.fromEntries(sortedMerged),
         });
     } catch (err) {
-        console.error('[getCustomItems] 發生錯誤', err);
-        res.status(500).json({ success: false, message: req.t('取得自定料理失敗') });
+        console.error(`[getCustomItems] 發生錯誤:`, err);
+        res.status(500).json({ success: false, message: req.t('取得自定資料失敗') });
     }
 };
+
 
 // 新增使用者自訂料理項目
 export const addCustomItem = async (req: Request, res: Response) => {

@@ -1,8 +1,9 @@
+// src/models/CuisineType.ts
 import mongoose from 'mongoose';
 
 const cuisineTypeSchema = new mongoose.Schema({
-    label: { type: String, required: true },
-    items: { type: [String], required: true },
+    label: { type: String, required: true, unique: true },
+    items: { type: [String], required: true, default: [] },
     imageUrl: { type: String },
 }, { timestamps: true });
 

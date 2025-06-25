@@ -63,6 +63,11 @@ const schema = new Schema(
             of: [String], // e.g. 日式料理: ['拉麵', '壽司']
             default: () => new Map(),
         },
+        customItemsByMeal: {
+            type: Map,
+            of: [String],
+            default: () => new Map(),
+        },
         role:{
             type:Number,
             default: UserRole.USER,
@@ -113,6 +118,7 @@ interface IUser extends mongoose.Document {
     lastLoginAt?: Date;
     lastLogoutAt?: Date; 
     customItemsByCuisine: Map<string, string[]>;
+    customItemsByMeal?: Map<string, string[]>;
     isModified(field: string): boolean;
 }
 
