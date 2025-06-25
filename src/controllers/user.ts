@@ -488,7 +488,7 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
             return;
         }
 
-        // 🧩 若使用者尚未編輯過該分類，從預設值中初始化
+        // 初始化使用者尚未覆寫的分類（從預設抓）
         if (!user.customItemsByCuisine.has(label)) {
             const preset = await Prize.findOne({ label });
             if (!preset) {
@@ -506,8 +506,16 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
             return;
         }
 
+        const isPreset = await Prize.exists({ label });
+
         if (filtered.length === 0) {
-            user.customItemsByCuisine.delete(label);
+            if (isPreset) {
+              // ✅ 預設分類 → 設為空，代表使用者明確「清空」
+                user.customItemsByCuisine.set(label, []);
+            } else {
+              // ✅ 自訂分類 → 直接刪除
+                user.customItemsByCuisine.delete(label);
+            }
         } else {
             user.customItemsByCuisine.set(label, filtered);
         }
@@ -520,6 +528,7 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: req.t('刪除失敗') });
     }
 };
+
 
 
 
