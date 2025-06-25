@@ -68,7 +68,7 @@ router.delete('/delete', authMiddleware, deleteAccount);
 // 取得料理項目
 router.get('/custom-items', authMiddleware, getCustomItems);
 
-// 加入自訂料理
+// 新增自訂料理
 router.post('/custom-items', authMiddleware, addCustomItem);
 
 // 刪除料理

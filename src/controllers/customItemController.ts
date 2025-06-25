@@ -22,13 +22,7 @@ export const resetCustomItems = async (req: Request, res: Response) => {
             res.status(500).json({ success: false, message: req.t('沒有預設料理資料') });
             return;
         }
-
-        const customItemsMap = new Map<string, string[]>();
-        for (const prize of defaultPrizes) {
-            customItemsMap.set(prize.label, [...prize.items]);
-        }
-
-        user.customItemsByCuisine = customItemsMap;
+        user.customItemsByCuisine = new Map();
         await user.save();
 
         res.json({ success: true, message: req.t('已重置為預設料理'), customItems: user.customItemsByCuisine });
