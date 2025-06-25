@@ -6,7 +6,7 @@ export const getAllMealPeriodPresets = async (req: Request, res: Response) => {
 
     try {
         if (meal) {
-            const preset = await MealPeriodPreset.findOne({ meal });
+            const preset = await MealPeriodPreset.findOne({ label: meal }); // ⬅️ 這裡改 label
             if (!preset) {
                 res.status(404).json({ success: false, message: '找不到該時段的餐點' });
                 return;
@@ -14,18 +14,22 @@ export const getAllMealPeriodPresets = async (req: Request, res: Response) => {
             res.json({
                 success: true,
                 filterType: 'meal',
-                title: getMealTitle(meal),
+                title: getMealTitle(meal), // meal == label
                 data: preset,
             });
             return;
         }
 
-        // 沒有 meal → 回傳全部
         const presets = await MealPeriodPreset.find();
-        const dataWithTitle = presets.map(p => ({
-            ...p.toObject(),
-            title: getMealTitle(p.meal),
-        }));
+        const dataWithTitle = presets.map(preset => {
+            const { label, ...rest } = preset.toObject();
+            return {
+                ...rest,
+                label,
+                title: getMealTitle(label),
+            };
+        });
+
         res.json({ 
             success: true,
             filterType: 'meal',
@@ -37,8 +41,8 @@ export const getAllMealPeriodPresets = async (req: Request, res: Response) => {
     }
 };
 
-function getMealTitle(meal: string): string {
-    switch (meal) {
+function getMealTitle(label: string): string {
+    switch (label) {
         case 'breakfast': return '早餐';
         case 'lunch': return '午餐';
         case 'dinner': return '晚餐';
@@ -46,5 +50,3 @@ function getMealTitle(meal: string): string {
         default: return '未分類';
     }
 }
-
-
