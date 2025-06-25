@@ -22,6 +22,7 @@ import healthRoutes from './routes/health'; //引入路由檢察
 import uploadRoutes from './routes/upload'; //引入路由檢察
 import record from './routes/record'
 import prizeRouter from './routes/prize';
+import mealRoutes from './routes/meal';
 import adminCustomMealItems from './routes/adminCustomMealItems';
 
 const app = express();
@@ -127,6 +128,7 @@ app.use('/upload', uploadRoutes);
 app.use('/record', record);
 app.use('/prizes', prizeRouter);
 app.use('/adminCustomMealItems', adminCustomMealItems);
+app.use('/meal',mealRoutes)
 
 // 測試key
 app.get('/test', (req, res) => {
