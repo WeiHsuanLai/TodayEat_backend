@@ -11,7 +11,7 @@ import { formatUnixTimestamp } from '../utils/formatTime'; // 時間轉換工具
 import { sendResetPasswordEmail } from '../utils/mailer'; // 傳送 emaal
 import  LoginLog  from '../models/LoginLog'; // 查詢登入登出紀錄
 import { log } from 'console';
-import { Prize } from '../models/Prize';
+import { CuisineType } from '../models/CuisineType';
 import { mergeCustomWithDefault } from '../utils/mergeCustomWithDefault';
 
 // 檢查帳號重複
@@ -380,8 +380,8 @@ export const getCustomItems = async (req: Request, res: Response) => {
             return;
         }
 
-        const defaultPrizes = await Prize.find();
-        const defaultMap = new Map(defaultPrizes.map(p => [p.label, p.items]));
+        const defaultCuisineTypes = await CuisineType.find();
+        const defaultMap = new Map(defaultCuisineTypes.map(p => [p.label, p.items]));
         const userMap = user.customItemsByCuisine;
         const merged = mergeCustomWithDefault(userMap, defaultMap);
 
@@ -445,9 +445,9 @@ export const addCustomItem = async (req: Request, res: Response) => {
             return;
         }
 
-        // 🧩 若尚未自訂過該分類，從 Prize 拿預設資料作為基礎
+        // 🧩 若尚未自訂過該分類，從 CuisineType 拿預設資料作為基礎
         if (!user.customItemsByCuisine.has(label)) {
-            const preset = await Prize.findOne({ label });
+            const preset = await CuisineType.findOne({ label });
             if (!preset) {
                 res.status(404).json({ success: false, message: req.t('預設料理分類不存在') });
                 return;
@@ -490,7 +490,7 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
 
         // 初始化使用者尚未覆寫的分類（從預設抓）
         if (!user.customItemsByCuisine.has(label)) {
-            const preset = await Prize.findOne({ label });
+            const preset = await CuisineType.findOne({ label });
             if (!preset) {
                 res.status(404).json({ success: false, message: req.t('預設料理分類不存在') });
                 return;
@@ -506,7 +506,7 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
             return;
         }
 
-        const isPreset = await Prize.exists({ label });
+        const isPreset = await CuisineType.exists({ label });
 
         if (filtered.length === 0) {
             if (isPreset) {
@@ -549,8 +549,8 @@ export const deleteCustomLabels = async (req: Request, res: Response) => {
             return;
         }
 
-        const defaultPrizes = await Prize.find();
-        const defaultLabelSet = new Set(defaultPrizes.map(p => p.label));
+        const defaultCuisineTypes = await CuisineType.find();
+        const defaultLabelSet = new Set(defaultCuisineTypes.map(p => p.label));
         const deleted: string[] = [];
 
         for (const label of labels) {
@@ -603,8 +603,8 @@ export const addCustomLabel = async (req: Request, res: Response) => {
         }
 
         // 🧠 強化：防止與預設分類衝突
-        const prizeConflict = await Prize.findOne({ label: normalizedLabel });
-        if (prizeConflict) {
+        const cuisineTypeConflict = await CuisineType.findOne({ label: normalizedLabel });
+        if (cuisineTypeConflict) {
             res.status(409).json({ success: false, message: req.t('該料理分類已為系統預設分類') });
             return;
         }

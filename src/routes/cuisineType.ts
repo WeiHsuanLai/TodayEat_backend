@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Prize } from '../models/Prize';
+import { CuisineType } from '../models/CuisineType';
 import { adminMiddleware } from '../middleware/adminMiddleware';
 
 const router = Router();
@@ -7,10 +7,10 @@ const router = Router();
 // 取得所有獎項
 router.get('/', async (req, res) => {
     try {
-        const prizes = await Prize.find().lean();
-        res.json(prizes);
+        const cuisineTypes = await CuisineType.find().lean();
+        res.json(cuisineTypes);
     } catch (err) {
-        console.error('[GET /prizes]', err);
+        console.error('[GET /cuisineTypes]', err);
         res.status(500).json({ error: '無法取得料理清單' });
     }
 });
@@ -27,11 +27,11 @@ router.post('/', adminMiddleware, async (req, res) => {
             return;
         }
         try {
-            const inserted = await Prize.insertMany(data);
+            const inserted = await CuisineType.insertMany(data);
             res.status(201).json(inserted);
             return;
         } catch (err) {
-            console.error('[POST /prizes] 批次失敗', err);
+            console.error('[POST /cuisineTypes] 批次失敗', err);
             res.status(500).json({ error: '批次儲存失敗' });
             return;
         }
@@ -45,11 +45,11 @@ router.post('/', adminMiddleware, async (req, res) => {
     }
 
     try {
-        const newPrize = await Prize.create({ label, items, imageUrl });
-        res.status(201).json(newPrize);
+        const newCuisineType = await CuisineType.create({ label, items, imageUrl });
+        res.status(201).json(newCuisineType);
         return;
     } catch (err) {
-        console.error('[POST /prizes] 單筆失敗', err);
+        console.error('[POST /cuisineTypes] 單筆失敗', err);
         res.status(500).json({ error: '儲存失敗' });
         return;
     }

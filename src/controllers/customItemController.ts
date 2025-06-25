@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import User from '../models/user';
-import { Prize } from '../models/Prize';
+import { CuisineType } from '../models/CuisineType';
 
 export const resetCustomItems = async (req: Request, res: Response) => {
     const userId = req.user?.id;
@@ -17,8 +17,8 @@ export const resetCustomItems = async (req: Request, res: Response) => {
             return;
         }
 
-        const defaultPrizes = await Prize.find();
-        if (!defaultPrizes.length) {
+        const defaultCuisineTypes = await CuisineType.find();
+        if (!defaultCuisineTypes.length) {
             res.status(500).json({ success: false, message: req.t('沒有預設料理資料') });
             return;
         }
