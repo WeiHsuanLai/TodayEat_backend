@@ -11,7 +11,6 @@ import { formatUnixTimestamp } from '../utils/formatTime'; // 時間轉換工具
 import { sendResetPasswordEmail } from '../utils/mailer'; // 傳送 emaal
 import  LoginLog  from '../models/LoginLog'; // 查詢登入登出紀錄
 import { log } from 'console';
-import { Prize } from '../models/Prize';
 
 // 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
@@ -89,19 +88,6 @@ export const register = async (req: Request, res: Response) => {
             email: req.body.email,
             role,
         });
-
-        const defaultPrizes = await Prize.find();
-        if (!defaultPrizes.length) {
-            log('⚠️ 無預設料理資料，customItems 將為空');
-        }
-        log('🎁 預設 customItems:', [...newUser.customItemsByCuisine.entries()]);
-        const customItemsMap = new Map<string, string[]>();
-
-        for (const prize of defaultPrizes) {
-            customItemsMap.set(prize.label, [...prize.items]);
-        }
-
-        newUser.customItemsByCuisine = customItemsMap;
 
         // 建立 JWT token
         const token = jwt.sign(
