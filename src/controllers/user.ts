@@ -507,10 +507,13 @@ export const addCustomItem = async (req: Request, res: Response) => {
 // 刪除單一料理
 export const deleteCustomItems = async (req: Request, res: Response) => {
     const userId = req.user?.id;
-    const { label, items } = req.body;
+    const { label, type } = req.body;
 
-    if (!label || !Array.isArray(items) || items.length === 0) {
-        res.status(400).json({ success: false, message: req.t('label 與 items 為必填') });
+    const rawItems = req.body.items;
+    const items = Array.isArray(rawItems) ? rawItems : rawItems ? [rawItems] : [];
+
+    if (!label || !items || items.length === 0 || !type) {
+        res.status(400).json({ success: false, message: req.t('label、items 與 type 為必填') });
         return;
     }
 
@@ -521,17 +524,32 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
             return;
         }
 
-        // 初始化使用者尚未覆寫的分類（從預設抓）
-        if (!user.customItemsByCuisine.has(label)) {
-            const preset = await CuisineType.findOne({ label });
-            if (!preset) {
-                res.status(404).json({ success: false, message: req.t('預設料理分類不存在') });
-                return;
-            }
-            user.customItemsByCuisine.set(label, [...preset.items]);
+        let targetMap: Map<string, string[]>;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let presetModel: any;
+
+        if (type === 'cuisine') {
+            targetMap = user.customItemsByCuisine ?? new Map();
+            presetModel = CuisineType;
+        } else if (type === 'meal') {
+            targetMap = user.customItemsByMeal ?? new Map();
+            presetModel = MealPeriodPreset;
+        } else {
+            res.status(400).json({ success: false, message: req.t('未知的分類類型') });
+            return;
         }
 
-        const current = user.customItemsByCuisine.get(label) || [];
+        // 初始化使用者尚未覆寫的分類
+        if (!targetMap.has(label)) {
+            const preset = await presetModel.findOne({ label });
+            if (!preset) {
+                res.status(404).json({ success: false, message: req.t('預設分類不存在') });
+                return;
+            }
+            targetMap.set(label, [...preset.items]);
+        }
+
+        const current = targetMap.get(label) || [];
         const filtered = current.filter((i) => !items.includes(i));
 
         if (filtered.length === current.length) {
@@ -539,18 +557,23 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
             return;
         }
 
-        const isPreset = await CuisineType.exists({ label });
+        const isPreset = await presetModel.exists({ label });
 
         if (filtered.length === 0) {
             if (isPreset) {
-              // ✅ 預設分類 → 設為空，代表使用者明確「清空」
-                user.customItemsByCuisine.set(label, []);
+                targetMap.set(label, []); // 清空
             } else {
-              // ✅ 自訂分類 → 直接刪除
-                user.customItemsByCuisine.delete(label);
+                targetMap.delete(label); // 刪除自訂分類
             }
         } else {
-            user.customItemsByCuisine.set(label, filtered);
+            targetMap.set(label, filtered);
+        }
+
+        // 寫回正確欄位
+        if (type === 'cuisine') {
+            user.customItemsByCuisine = targetMap;
+        } else {
+            user.customItemsByMeal = targetMap;
         }
 
         await user.save();
@@ -561,6 +584,7 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: req.t('刪除失敗') });
     }
 };
+
 
 
 
