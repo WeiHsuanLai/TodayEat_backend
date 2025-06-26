@@ -65,20 +65,20 @@ router.post('/change-password', authMiddleware, changePassword);
 // 註銷帳號
 router.delete('/delete', authMiddleware, deleteAccount); 
 
-// 取得料理項目
+// 取得各國種類使用者自訂項目
 router.get('/custom-items', authMiddleware, getCustomItems);
 
-// 新增自訂料理
+// 新增各國種類使用者自訂項目
 router.post('/custom-items', authMiddleware, addCustomItem);
+
+// 刪除各國種類使用者自訂項目
+router.delete('/custom-item/label', authMiddleware, deleteCustomLabels);
 
 // 刪除料理
 router.delete('/custom-items', authMiddleware, deleteCustomItems);
 
 // 新增料理種類
 router.post('/custom-item/label', authMiddleware, addCustomLabel);
-
-// 刪除料理種類
-router.delete('/custom-item/label', authMiddleware, deleteCustomLabels);
 
 // 重置所有料理
 router.post('/custom-items/reset', authMiddleware, resetCustomItems);
