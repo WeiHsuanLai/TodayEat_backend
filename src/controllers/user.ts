@@ -430,7 +430,7 @@ export const getCustomItems = async (req: Request, res: Response) => {
 };
 
 
-// 新增各國種類使用者自訂項目
+// 新增使用者自訂項目
 export const addCustomItem = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     const { label, item, type } = req.body;
@@ -619,11 +619,25 @@ export const deleteCustomItems = async (req: Request, res: Response) => {
 export const deleteCustomLabels = async (req: Request, res: Response) => {
     const userId = req.user?.id;
     console.log('🔥 [deleteCustomLabels] req.body =', req.body);
+
     // 👉 保護性解構 req.body
-    const { labels, type } = req.body ?? {};
+    let labels = req.body?.labels;
+    const type = req.body?.type;
+
+    // ✅ 保證 labels 為陣列（就算只傳一個字串也轉成陣列）
+    if (typeof labels === 'string') {
+        try {
+            const parsed = JSON.parse(labels.replace(/'/g, '"'));
+            labels = Array.isArray(parsed) ? parsed : [labels]; // 解析成功為陣列 → 用解析結果；否則包一層
+        } catch {
+            labels = [labels];
+        }
+    } else if (!Array.isArray(labels)) {
+        labels = [];
+    }
 
     // 👉 檢查基本參數
-    if (!Array.isArray(labels) || labels.length === 0 || !type) {
+    if (labels.length === 0 || !type) {
         res.status(400).json({
             success: false,
             message: req.t('labels 與 type 為必填'),
@@ -649,7 +663,6 @@ export const deleteCustomLabels = async (req: Request, res: Response) => {
             return;
         }
 
-        // 👉 取得對應的 map 與預設資料模型
         const isCuisine = type === 'cuisine';
         const targetMap = isCuisine
             ? user.customItemsByCuisine ?? new Map<string, string[]>()
@@ -664,13 +677,11 @@ export const deleteCustomLabels = async (req: Request, res: Response) => {
         for (const label of labels) {
             console.log('🔍 正在檢查 label:', label);
             if (defaultLabelSet.has(label)) {
-                // ✅ 預設分類 → 設空陣列代表隱藏
                 console.log(`🟡 是預設分類 → 清空: ${label}`);
                 targetMap.set(label, []);
                 deleted.push(label);
             } else if (targetMap.has(label)) {
                 console.log(`🟢 是自訂分類 → 刪除: ${label}`);
-                // ✅ 使用者自訂分類 → 直接刪除
                 targetMap.delete(label);
                 deleted.push(label);
             } else {
@@ -678,7 +689,6 @@ export const deleteCustomLabels = async (req: Request, res: Response) => {
             }
         }
 
-        // ❌ 沒有刪除任何東西
         if (deleted.length === 0) {
             res.status(404).json({
                 success: false,
@@ -687,7 +697,6 @@ export const deleteCustomLabels = async (req: Request, res: Response) => {
             return;
         }
 
-        // ✅ 回寫更新後的 Map
         if (isCuisine) {
             user.customItemsByCuisine = targetMap;
         } else {
@@ -701,16 +710,15 @@ export const deleteCustomLabels = async (req: Request, res: Response) => {
             message: req.t('已刪除分類'),
             deleted,
         });
-        return;
     } catch (err) {
         console.error('[deleteCustomLabels] 發生錯誤', err);
         res.status(500).json({
             success: false,
             message: req.t('刪除分類失敗'),
         });
-        return;
     }
 };
+
 
 
 
