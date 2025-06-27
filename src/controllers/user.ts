@@ -396,13 +396,26 @@ export const getCustomItems = async (req: Request, res: Response) => {
         const defaultMap = new Map(defaultEntries.map(p => [p.label, p.items]));
         const userMap = type === 'meal' ? user.customItemsByMeal : user.customItemsByCuisine;
         const merged = mergeCustomWithDefault(userMap, defaultMap);
+        const mode = req.query.mode?.toString()?.trim();
 
+        // mode=labels 時 → 傳回所有有資料的分類標題
+        if (mode === 'labels') {
+            const labels = [...merged.entries()]
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                .filter(([_, items]) => items.length > 0)
+                .map(([label]) => label);
+            res.json({ success: true, filterType: type, labels });
+            return;
+        }
+
+        // 指定 label 時 → 傳回該分類資料
         if (label) {
             const items = merged.get(label);
             if (!items || items.length === 0) {
                 res.status(404).json({ success: false, message: req.t('找不到該分類') });
                 return;
             }
+            
             res.json({ success: true, filterType: type, label, items });
             return;
         }
@@ -783,7 +796,7 @@ export const addCustomLabel = async (req: Request, res: Response) => {
         } else if (Array.isArray(items)) {
             normalizedItems = items;
         }
-        
+
         const safeItems = normalizedItems.filter((i) => typeof i === 'string');
 
         targetMap.set(normalizedLabel, safeItems);
