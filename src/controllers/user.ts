@@ -776,9 +776,15 @@ export const addCustomLabel = async (req: Request, res: Response) => {
             return;
         }
 
-        const safeItems = Array.isArray(items)
-            ? items.filter((i) => typeof i === 'string')
-            : [];
+        let normalizedItems: unknown[] = [];
+
+        if (typeof items === 'string') {
+            normalizedItems = [items];
+        } else if (Array.isArray(items)) {
+            normalizedItems = items;
+        }
+        
+        const safeItems = normalizedItems.filter((i) => typeof i === 'string');
 
         targetMap.set(normalizedLabel, safeItems);
 

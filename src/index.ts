@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import './utils/logger';
 if (process.env.CLEAR) {
   console.clear();
@@ -23,6 +24,7 @@ import uploadRoutes from './routes/upload'; //引入路由檢察
 import record from './routes/record'
 import cuisineTypeRouter from './routes/cuisineType';
 import mealPeriodPresetRouter from './routes/mealPeriodPreset';
+import type { TFunction } from 'i18next';
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -95,6 +97,16 @@ cron.schedule('0 */8 * * *', async () => {
 
 // middleware 中介層設定
 app.use(i18nMiddleware);
+// 安全 fallback（避免漏掛 i18nMiddleware 時 req.t 是 undefined）
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fallbackT: TFunction = ((key: string, _options?: any) => key) as TFunction;
+
+app.use((req, res, next) => {
+    if (typeof req.t !== 'function') {
+        req.t = fallbackT;
+    }
+    next();
+});
 app.use(cors({
   origin(origin, callback) {
     const allowlist = [
@@ -142,10 +154,9 @@ app.use((req, res) => {
 
 
 // ✅ 全域錯誤處理 middleware（一定要放在所有 route 後面）
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {
     logError(req.t('[全域錯誤]'), err);
-
     const fallback = req.t('未知錯誤');
     const message = typeof req.t === 'function' ? req.t('發生未知錯誤，請稍後再試') : fallback;
 

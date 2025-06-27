@@ -68,8 +68,11 @@ router.delete('/delete', authMiddleware, deleteAccount);
 // 取得使用者自訂項目(全部各式料理)
 router.get('/custom-items', authMiddleware, getCustomItems);
 
-// 新增使用者自訂項目
+// 新增使用者自訂單一料理
 router.post('/custom-items', authMiddleware, addCustomItem);
+
+// 新增使用者自訂料理項目
+router.post('/custom-items/label', authMiddleware, addCustomLabel);
 
 // 刪除使用者自訂料理項目
 router.delete('/custom-items/label', authMiddleware, deleteCustomLabels);
@@ -77,8 +80,6 @@ router.delete('/custom-items/label', authMiddleware, deleteCustomLabels);
 // 刪除使用者自訂單一料理
 router.delete('/custom-items', authMiddleware, deleteCustomItems);
 
-// 新增料理種類
-router.post('/custom-items/label', authMiddleware, addCustomLabel);
 
 // 重置所有料理
 router.post('/custom-items/reset', authMiddleware, resetCustomItems);
