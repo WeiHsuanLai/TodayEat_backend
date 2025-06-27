@@ -69,8 +69,6 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         };
         next();
     } catch (err: unknown) {
-        logError(`[token 錯誤: ${err instanceof Error ? err.message : '未知錯誤'}]`, err);
-
         if (err instanceof jwt.TokenExpiredError) {
             res.status(401).json({
                 success: false,
@@ -79,7 +77,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             });
             return
         }
-
+        logError(`[token 錯誤: ${err instanceof Error ? err.message : '未知錯誤'}]`, err);
         res.status(401).json({
             success: false,
             message: req.t('token 驗證失敗'),
