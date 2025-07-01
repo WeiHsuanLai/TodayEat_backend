@@ -5,7 +5,7 @@ import { authMiddleware } from '../middleware/auth'
 const router = Router();
 
 router.get('/nearby-stores', authMiddleware, async (req, res) => {
-    const { keyword, lat, lng } = req.query;
+    const { keyword, lat, lng, radius = 1000 } = req.query;
 
     if (!lat || !lng || !keyword) {
         res.status(400).json({ error: '❌ 缺少參數 lat, lng, keyword' });
@@ -19,14 +19,15 @@ router.get('/nearby-stores', authMiddleware, async (req, res) => {
                 params: {
                     key: process.env.GOOGLE_API_KEY,
                     location: `${lat},${lng}`,
-                    radius: 1000,
+                    radius: Number(radius),
                     keyword,
                     language: 'zh-TW',
                 },
             }
         );
 
-        res.json(response.data);
+        const filteredResults = response.data.results.filter((place: { rating: undefined; }) => place.rating !== undefined);
+        res.json({ ...response.data, results: filteredResults });
     } catch (err) {
         console.error('[Google Places API Error]', err);
         res.status(500).json({ error: '❌ 無法取得地圖資料' });
