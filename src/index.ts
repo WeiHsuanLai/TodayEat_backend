@@ -24,6 +24,7 @@ import uploadRoutes from './routes/upload'; //引入路由檢察
 import record from './routes/record'
 import cuisineTypeRouter from './routes/cuisineType';
 import mealPeriodPresetRouter from './routes/mealPeriodPreset';
+import placesRouter from './routes/places';
 import type { TFunction } from 'i18next';
 
 const app = express();
@@ -139,6 +140,7 @@ app.use('/upload', uploadRoutes);
 app.use('/record', record);
 app.use('/cuisineTypes', cuisineTypeRouter);
 app.use('/mealPresets', mealPeriodPresetRouter);
+app.use('/places', placesRouter);
 
 // 測試key
 app.get('/test', (req, res) => {
