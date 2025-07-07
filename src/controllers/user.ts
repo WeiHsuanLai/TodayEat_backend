@@ -12,7 +12,6 @@ import { sendResetPasswordEmail } from '../utils/mailer'; // 傳送 emaal
 import  LoginLog  from '../models/LoginLog'; // 查詢登入登出紀錄
 import { log } from 'console';
 import { CuisineType } from '../models/CuisineType';
-import { mergeCustomWithDefault } from '../utils/mergeCustomWithDefault';
 import { MealPeriodPreset } from '../models/MealPeriodPreset';
 
 // 檢查帳號重複
@@ -376,7 +375,7 @@ export const getCustomItems = async (req: Request, res: Response) => {
     try {
         const type = req.query.type?.toString()?.trim() ?? 'cuisine'; // 預設為 cuisine
         const label = req.query.label?.toString()?.trim();
-
+        
         const user = await User.findById(req.user?.id).select(
             type === 'meal' ? 'customItemsByMeal' : 'customItemsByCuisine'
         );
@@ -385,44 +384,56 @@ export const getCustomItems = async (req: Request, res: Response) => {
             return;
         }
 
-        // 動態載入預設資料
-        let defaultEntries: { label: string; items: string[] }[] = [];
+        // 載入預設資料（包含 imageUrl）
+        let defaultEntries: { label: string; items: string[]; imageUrl?: string }[] = [];
         if (type === 'meal') {
-            defaultEntries = await MealPeriodPreset.find(); // 早餐/午餐...
+            defaultEntries = await MealPeriodPreset.find();
         } else {
-            defaultEntries = await CuisineType.find(); // 台式/日式...
+            defaultEntries = await CuisineType.find();
         }
 
-        const defaultMap = new Map(defaultEntries.map(p => [p.label, p.items]));
+        const defaultMap = new Map(defaultEntries.map(p => [p.label, { items: p.items, imageUrl: p.imageUrl }]));
         const userMap = type === 'meal' ? user.customItemsByMeal : user.customItemsByCuisine;
-        const merged = mergeCustomWithDefault(userMap, defaultMap);
+
+        // 合併使用者資料與預設資料
+        const merged = new Map<string, { items: string[]; imageUrl?: string }>();
+        for (const [label, { items: defaultItems, imageUrl }] of defaultMap.entries()) {
+            const userItems = userMap?.get(label) ?? [];
+            const mergedItems = [...new Set([...defaultItems, ...userItems])];
+            merged.set(label, { items: mergedItems, imageUrl });
+        }
+
+        // 加入使用者自創分類（不在預設中）
+        for (const [label, userItems] of userMap?.entries() ?? []) {
+            if (!defaultMap.has(label)) {
+                merged.set(label, { items: userItems });
+            }
+        }
+
         const mode = req.query.mode?.toString()?.trim();
 
-        // mode=labels 時 → 傳回所有有資料的分類標題
         if (mode === 'labels') {
             const labels = [...merged.entries()]
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                .filter(([_, items]) => items.length > 0)
+                .filter(([_, val]) => val.items.length > 0)
                 .map(([label]) => label);
             res.json({ success: true, filterType: type, labels });
             return;
         }
 
-        // 指定 label 時 → 傳回該分類資料
         if (label) {
-            const items = merged.get(label);
-            if (!items || items.length === 0) {
+            const data = merged.get(label);
+            if (!data || data.items.length === 0) {
                 res.status(404).json({ success: false, message: req.t('找不到該分類') });
                 return;
             }
-            
-            res.json({ success: true, filterType: type, label, items });
+            res.json({ success: true, filterType: type, label, ...data });
             return;
         }
 
         const sortedMerged = [...merged.entries()]
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .filter(([_, items]) => items.length > 0)
+            .filter(([_, val]) => val.items.length > 0)
             .sort(([a], [b]) => {
                 const isDefaultA = defaultMap.has(a);
                 const isDefaultB = defaultMap.has(b);
@@ -430,7 +441,7 @@ export const getCustomItems = async (req: Request, res: Response) => {
                 if (isDefaultA && !isDefaultB) return 1;
                 return a.localeCompare(b, 'zh-Hant');
             });
-
+        
         res.json({
             success: true,
             filterType: type,
@@ -441,6 +452,7 @@ export const getCustomItems = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: req.t('取得自定資料失敗') });
     }
 };
+
 
 
 // 新增使用者自訂項目

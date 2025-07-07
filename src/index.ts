@@ -26,6 +26,7 @@ import cuisineTypeRouter from './routes/cuisineType';
 import mealPeriodPresetRouter from './routes/mealPeriodPreset';
 import placesRouter from './routes/places';
 import type { TFunction } from 'i18next';
+import uploadMealImageRoutes from './routes/uploadMealImage';
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -141,6 +142,7 @@ app.use('/record', record);
 app.use('/cuisineTypes', cuisineTypeRouter);
 app.use('/mealPresets', mealPeriodPresetRouter);
 app.use('/places', placesRouter);
+app.use('/uploadMealImage', uploadMealImageRoutes);
 
 // 測試key
 app.get('/test', (req, res) => {
