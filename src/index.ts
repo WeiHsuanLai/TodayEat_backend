@@ -150,8 +150,13 @@ app.get('/test', (req, res) => {
   log(req.t("測試成功"));
 });
 
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end(); // 無內容回應，不報錯
+});
+
 // 以上請求都沒有就進入
 app.use((req, res) => {
+    logWarn(`❓ 未知請求：${req.method} ${req.originalUrl}`);
     logWarn(req.t('未知請求將導向外部網址'));
     res.redirect('https://www.youtube.com/watch?v=IxX_QHay02M');
 });
