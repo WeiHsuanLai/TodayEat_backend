@@ -2,7 +2,7 @@
 import express from 'express';
 import multer from 'multer';
 import { uploadMealImage } from '../controllers/uploadMealImage';
-import { authMiddleware } from '../middleware/auth';
+import { adminMiddleware } from '../middleware/adminMiddleware';
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ const upload = multer({
 
 router.post(
     '/meal-image',
-    authMiddleware,
+    adminMiddleware,
     (req, res, next) => {
         upload.single('file')(req, res, (err) => {
             if (err) {
