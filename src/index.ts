@@ -11,22 +11,14 @@ import mongoose,{ Types } from 'mongoose';
 import cors from 'cors'; // 如有跨域需求可啟用
 import { StatusCodes } from 'http-status-codes'; // 提供標準 HTTP 狀態碼常數
 import i18nMiddleware from './middleware/i18n'; // 多語系中介層
-import routerUser from './routes/user'; // 使用者相關路由
 import helmet from 'helmet'; // 設定 HTTP 安全標頭
 import cron from 'node-cron'; // 設定排程任務
 import jwt,{ JwtPayload } from 'jsonwebtoken';
 import User from './models/user'; // 引入 mongodb 模型
 import i18n from 'i18next';
 import { formatUnixTimestamp } from './utils/formatTime';
-import adminRoutes from './routes/admin';
-import healthRoutes from './routes/health'; //引入路由檢察
-import uploadRoutes from './routes/upload'; //引入路由檢察
-import record from './routes/record'
-import cuisineTypeRouter from './routes/cuisineType';
-import mealPeriodPresetRouter from './routes/mealPeriodPreset';
-import placesRouter from './routes/places';
 import type { TFunction } from 'i18next';
-import uploadMealImageRoutes from './routes/uploadMealImage';
+import apiRoutes from './routes';// 路由整合
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -132,17 +124,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(safeMongoSanitize); // 清除潛在的 MongoDB 查詢語法
 app.use(helmet());
-
-// routes
-app.use('/user', routerUser);
-app.use('/admin', adminRoutes);
-app.use('/health', healthRoutes);
-app.use('/upload', uploadRoutes);
-app.use('/record', record);
-app.use('/cuisineTypes', cuisineTypeRouter);
-app.use('/mealPresets', mealPeriodPresetRouter);
-app.use('/places', placesRouter);
-app.use('/uploadMealImage', uploadMealImageRoutes);
+app.use(apiRoutes); //路由整合
 
 // 測試key
 app.get('/test', (req, res) => {
