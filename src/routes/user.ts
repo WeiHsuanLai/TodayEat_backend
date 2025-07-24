@@ -1,5 +1,5 @@
 import express from 'express';
-import { 
+import {
     register,
     logout,
     forgotPassword,
@@ -28,10 +28,10 @@ router.post(
     '/register',
     [
         body('account')
-        .isLength({ min: 4, max: 20 }).withMessage('帳號長度應為4~20')
-        .isAlphanumeric().withMessage('帳號只能包含英文與數字'),
+            .isLength({ min: 4, max: 20 }).withMessage('帳號長度應為4~20')
+            .isAlphanumeric().withMessage('帳號只能包含英文與數字'),
         body('password')
-        .isLength({ min: 4 }).withMessage('密碼長度至少4碼'),
+            .isLength({ min: 4 }).withMessage('密碼長度至少4碼'),
     ],
     register
 );
@@ -63,7 +63,7 @@ router.get('/login-logs', authMiddleware, getLoginLogs);
 router.post('/change-password', authMiddleware, changePassword);
 
 // 註銷帳號
-router.delete('/delete', authMiddleware, deleteAccount); 
+router.delete('/delete', authMiddleware, deleteAccount);
 
 // 取得使用者自訂項目(全部各式料理)
 router.get('/custom-items', authMiddleware, getCustomItems);

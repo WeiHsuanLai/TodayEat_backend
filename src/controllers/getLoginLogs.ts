@@ -6,7 +6,7 @@ interface AuthenticatedRequest extends Request {
         id: string;
         account: string;
         role: number;
-        avatar: string; 
+        avatar: string;
     };
 }
 
@@ -24,7 +24,7 @@ export const getLoginLogs = async (req: AuthenticatedRequest, res: Response) => 
             .limit(50);
 
         res.json({ success: true, logs });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
         res.status(500).json({ success: false, message: req.t('取得登入紀錄失敗') });
     }

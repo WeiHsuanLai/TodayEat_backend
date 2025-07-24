@@ -9,7 +9,7 @@ import { validationResult } from 'express-validator'; // 驗證欄位
 import UserRole from '../enums/UserRole'; // 使用者權限定義
 import { formatUnixTimestamp } from '../utils/formatTime'; // 時間轉換工具
 import { sendResetPasswordEmail } from '../utils/mailer'; // 傳送 emaal
-import  LoginLog  from '../models/LoginLog'; // 查詢登入登出紀錄
+import LoginLog from '../models/LoginLog'; // 查詢登入登出紀錄
 import { log } from 'console';
 import { CuisineType } from '../models/CuisineType';
 import { MealPeriodPreset } from '../models/MealPeriodPreset';
@@ -28,7 +28,7 @@ function isMongoServerError(error: unknown): error is { name: string; code: numb
 export const register = async (req: Request, res: Response) => {
     log('收到的 req.body:', req.body);
     const errors = validationResult(req);
-    log("errors",errors)
+    log("errors", errors)
     if (!errors.isEmpty()) {
         const formattedErrors = errors.array().map((err) => ({
             msg: err.msg,
@@ -93,11 +93,12 @@ export const register = async (req: Request, res: Response) => {
 
         // 建立 JWT token
         const token = jwt.sign(
-            { 
-                id: newUser._id, 
-                account: newUser.account, 
+            {
+                id: newUser._id,
+                account: newUser.account,
                 role: newUser.role,
-                avatar: newUser.avatar || '', },
+                avatar: newUser.avatar || '',
+            },
             process.env.JWT_SECRET || 'secret',
             { expiresIn: '8h' }
         );
@@ -124,14 +125,14 @@ export const register = async (req: Request, res: Response) => {
             ip: req.ip,
             userAgent: req.headers['user-agent'] || 'unknown',
         });
-        
+
     } catch (err) {
         if (err instanceof mongoose.Error.ValidationError) {
             const mongooseErrors = Object.entries(err.errors).map(([key, val]) => ({
                 field: key,
                 msg: (val as mongoose.Error.ValidatorError).message,
             }));
-        
+
             res.status(StatusCodes.BAD_REQUEST).json({
                 success: false,
                 message: mongooseErrors[0].msg,
@@ -215,9 +216,9 @@ export const login = async (req: Request, res: Response) => {
 
         // 建立token
         const token = jwt.sign(
-            { 
-                id: user._id, 
-                account: user.account, 
+            {
+                id: user._id,
+                account: user.account,
                 role: user.role,
                 avatar: user.avatar || '',
             },
@@ -239,9 +240,9 @@ export const login = async (req: Request, res: Response) => {
             token,
             iat: iatFormatted,
             exp: expFormatted,
-            user: { 
-                account: user.account, 
-                role: user.role, 
+            user: {
+                account: user.account,
+                role: user.role,
                 avatar: user.avatar || '',
                 token: req.headers.authorization?.split(' ')[1],
             },
@@ -254,9 +255,9 @@ export const login = async (req: Request, res: Response) => {
             userAgent: req.headers['user-agent'] || 'unknown',
         });
 
-        const roleLabel = 
+        const roleLabel =
             user.role === UserRole.ADMIN ? '管理員' :
-            user.role === UserRole.USER ? '一般會員' : '未知角色';
+                user.role === UserRole.USER ? '一般會員' : '未知角色';
         log(`✅ 使用者登入：帳號=${user.account}，身分=${roleLabel}`);
     } catch (err) {
         logError('❌ 登入發生錯誤:', err);
@@ -375,7 +376,7 @@ export const getCustomItems = async (req: Request, res: Response) => {
     try {
         const type = req.query.type?.toString()?.trim() ?? 'cuisine'; // 預設為 cuisine
         const label = req.query.label?.toString()?.trim();
-        
+
         const user = await User.findById(req.user?.id).select(
             type === 'meal' ? 'customItemsByMeal' : 'customItemsByCuisine'
         );
@@ -441,7 +442,7 @@ export const getCustomItems = async (req: Request, res: Response) => {
                 if (isDefaultA && !isDefaultB) return 1;
                 return a.localeCompare(b, 'zh-Hant');
             });
-        
+
         res.json({
             success: true,
             filterType: type,
@@ -789,9 +790,9 @@ export const addCustomLabel = async (req: Request, res: Response) => {
         }
 
         const targetMap: Map<string, string[]> =
-        type === 'cuisine'
-            ? user.customItemsByCuisine ?? new Map()
-            : user.customItemsByMeal ?? new Map();
+            type === 'cuisine'
+                ? user.customItemsByCuisine ?? new Map()
+                : user.customItemsByMeal ?? new Map();
 
         if (targetMap.has(normalizedLabel)) {
             res.status(409).json({

@@ -12,10 +12,10 @@ interface MyJwtPayload extends JwtPayload {
 
 export const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization?.split(' ')[1];
-    if (!token){
+    if (!token) {
         res.status(401).json({ success: false, message: '未授權' });
         return;
-    } 
+    }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as MyJwtPayload;

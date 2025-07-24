@@ -12,7 +12,7 @@ cloudinary.config({
 
 export const uploadMealImage = async (req: Request, res: Response) => {
     const { label } = req.body;
-    
+
     if (!label) {
         res.status(400).json({ error: '請提供分類名稱（label）' });
         return;

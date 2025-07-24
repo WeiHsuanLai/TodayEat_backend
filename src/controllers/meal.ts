@@ -30,10 +30,10 @@ export const getAllMealPeriodPresets = async (req: Request, res: Response) => {
             };
         });
 
-        res.json({ 
+        res.json({
             success: true,
             filterType: 'meal',
-            data: dataWithTitle 
+            data: dataWithTitle
         });
     } catch (err) {
         console.error('查詢餐點錯誤：', err);

@@ -40,7 +40,7 @@ router.get('/nearby-stores', authMiddleware, async (req, res) => {
                 const photoUrl = photoReference
                     ? encodeURI(`https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${process.env.GOOGLE_API_KEY}`)
                     : null;
-                
+
                 return {
                     ...place,
                     photoUrl,

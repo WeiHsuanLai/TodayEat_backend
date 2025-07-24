@@ -2,7 +2,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { Request, Response } from 'express';
 import streamifier from 'streamifier';
-import User from '../models/user'; 
+import User from '../models/user';
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,

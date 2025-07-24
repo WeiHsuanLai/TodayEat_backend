@@ -23,7 +23,7 @@ const getTodayString = () => new Date().toISOString().slice(0, 10);
 
 // 🍱 抽餐 API（每餐只保留一筆，重複會更新）
 export const drawFood = async (req: RequestWithUser<DrawFoodInput>, res: Response) => {
-    if (!req.user){
+    if (!req.user) {
         res.status(401).json({ message: '未登入' });
         return;
     }
@@ -47,7 +47,7 @@ export const drawFood = async (req: RequestWithUser<DrawFoodInput>, res: Respons
 
 // 🍱 查今日四餐（含 null）
 export const getTodayFoodDraws = async (req: RequestWithUser, res: Response) => {
-    if (!req.user){
+    if (!req.user) {
         res.status(401).json({ message: '未登入' });
         return;
     }
@@ -93,7 +93,7 @@ export const getAllFoodDraws = async (req: RequestWithUser, res: Response) => {
 
 // 📅 查某日餐點紀錄
 export const getFoodDrawsByDate = async (req: RequestWithUser, res: Response) => {
-    if (!req.user){
+    if (!req.user) {
         res.status(401).json({ message: '未登入' });
         return;
     }

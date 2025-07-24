@@ -6,10 +6,10 @@ export const getAllLoginLogs = async (req: Request, res: Response) => {
     try {
         // 取得查詢參數（來自 URL）
         const { keyword, from, to, limit, sort } = req.query;
-        
+
         // 預設為最新在前
         const sortDirection = (sort === 'asc' || sort === 'desc') ? (sort === 'asc' ? 1 : -1) : -1;
-        
+
         // 定義篩選條件的型別（擴充性佳，支援多欄位）
         interface LoginLogFilter extends Record<string, unknown> {
             $or?: Array<Record<string, unknown>>;
@@ -20,7 +20,7 @@ export const getAllLoginLogs = async (req: Request, res: Response) => {
         }
 
         const filter: LoginLogFilter = {};
-        
+
         // 若有關鍵字則模糊搜尋 IP 或地理位置
         if (keyword) {
             filter.$or = [

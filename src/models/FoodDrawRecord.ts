@@ -2,7 +2,7 @@ import { Schema, model } from 'mongoose';
 
 // 定義「每日抽餐紀錄」的資料 Schema
 const FoodDrawRecordSchema = new Schema({
-  // 使用者 ID，關聯 User
+    // 使用者 ID，關聯 User
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 
     // 每日四餐類型
@@ -33,10 +33,10 @@ const FoodDrawRecordSchema = new Schema({
         trim: true
     }
 },
-{ 
-    versionKey: false,
-    timestamps: true 
-}
+    {
+        versionKey: false,
+        timestamps: true
+    }
 );
 
 // 建立複合索引：每人每日每餐只允許一筆
