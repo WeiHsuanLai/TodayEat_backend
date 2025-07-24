@@ -9,7 +9,7 @@ const cartSchema = new Schema({
     p_id: {
         type: Schema.Types.ObjectId,
         ref: 'products',
-        required:[true,'使用者購物車必填']
+        required: [true, '使用者購物車必填']
     },
     quantity: {
         type: Number,
@@ -21,21 +21,21 @@ const cartSchema = new Schema({
 // 控制資料儲存
 const schema = new Schema(
     {
-        account:{
-            type:String,
-            required:[true,'使用者帳號必填'],
-            minlength:[4,'使用者帳號長度不符'],
-            maxlength:[20,'使用者帳號長度不符'],
-            unique:true,
+        account: {
+            type: String,
+            required: [true, '使用者帳號必填'],
+            minlength: [4, '使用者帳號長度不符'],
+            maxlength: [20, '使用者帳號長度不符'],
+            unique: true,
             validate: {
                 validator: (value: string) => validator.isAlphanumeric(value),
                 message: '使用者格式錯誤'
             }
         },
-        password:{
-            type:String,
-            required:[true,'使用者密碼必填'],
-            minlength:[4,'使用者密碼長度不符'],
+        password: {
+            type: String,
+            required: [true, '使用者密碼必填'],
+            minlength: [4, '使用者密碼長度不符'],
         },
         email: {
             type: String,
@@ -47,16 +47,16 @@ const schema = new Schema(
                 message: 'Email 格式錯誤'
             }
         },
-        tokens:{
-            type:[String],
+        tokens: {
+            type: [String],
             default: []
         },
         avatar: {
             type: String,
             default: 'https://api.dicebear.com/7.x/avataaars/svg?seed=${username}',
         },
-        cart:{
-            type:[cartSchema]
+        cart: {
+            type: [cartSchema]
         },
         customItemsByCuisine: {
             type: Map,
@@ -68,8 +68,8 @@ const schema = new Schema(
             of: [String],
             default: () => new Map(),
         },
-        role:{
-            type:Number,
+        role: {
+            type: Number,
             default: UserRole.USER,
         },
         lastLoginAt: {
@@ -116,7 +116,7 @@ interface IUser extends mongoose.Document {
     cart: ICartItem[];
     role: number;
     lastLoginAt?: Date;
-    lastLogoutAt?: Date; 
+    lastLogoutAt?: Date;
     customItemsByCuisine: Map<string, string[]>;
     customItemsByMeal?: Map<string, string[]>;
     isModified(field: string): boolean;
@@ -143,7 +143,7 @@ schema.methods.comparePassword = function (inputPassword: string): boolean {
 };
 
 // 建立虛擬欄位，名為'cartQuantity'，當 get 時，指向購物車陣列，並將所有 quantity 加總後回傳
-schema.virtual('cartQuantity').get(function(){
+schema.virtual('cartQuantity').get(function () {
     if (!Array.isArray(this.cart)) return 0;
     return this.cart.reduce((total, current) => {
         return total + current.quantity
