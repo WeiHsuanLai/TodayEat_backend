@@ -16,8 +16,6 @@ interface DrawFoodInput {
     food: FoodDraw['food'];
 }
 
-
-
 // 日期字串格式：'YYYY-MM-DD'
 const getTodayString = () => new Date().toISOString().slice(0, 10);
 
@@ -33,19 +31,21 @@ export const drawFood = async (req: RequestWithUser<DrawFoodInput>, res: Respons
     const date = getTodayString();
 
     try {
-        const result = await FoodDrawRecord.findOneAndUpdate(
-            { userId: id, date, meal },
-            { food },
-            { upsert: true, new: true }
-        );
-        res.json({ message: '抽餐成功', data: result });
+        const newRecord = new FoodDrawRecord({
+            userId: id,
+            date,
+            meal,
+            food
+        });
+
+        await newRecord.save();
+        res.json({ message: '抽餐成功', data: newRecord });
     } catch (error) {
         console.error('❌ drawFood error:', error);
         res.status(500).json({ message: '伺服器錯誤', error: String(error) });
     }
 };
 
-// 🍱 查今日四餐（含 null）
 export const getTodayFoodDraws = async (req: RequestWithUser, res: Response) => {
     if (!req.user) {
         res.status(401).json({ message: '未登入' });
@@ -57,22 +57,22 @@ export const getTodayFoodDraws = async (req: RequestWithUser, res: Response) => 
 
     try {
         const records = await FoodDrawRecord.find({ userId: id, date }).sort({ createdAt: -1 });
-        const meals: FoodDraw['meal'][] = ['breakfast', 'lunch', 'dinner', 'midnight'];
-        const result: Record<FoodDraw['meal'], string | null> = {
-            breakfast: null,
-            lunch: null,
-            dinner: null,
-            midnight: null
-        };
-        meals.forEach(meal => {
-            result[meal] = records.find(r => r.meal === meal)?.food || null;
+        if (records.length === 0) {
+            res.json({ date, meals: {} });
+            return
+        }
+        const result: Record<string, string> = {};
+        records.forEach(r => {
+            result[r.meal] = r.food;
         });
+
         res.json({ date, meals: result });
     } catch (error) {
         console.error('❌ getTodayFoodDraws error:', error);
         res.status(500).json({ message: '伺服器錯誤', error: String(error) });
     }
 };
+
 
 export const getAllFoodDraws = async (req: RequestWithUser, res: Response) => {
     if (!req.user) {

@@ -7,7 +7,6 @@ import record from './record';
 import cuisineTypes from './cuisineType';
 import mealPresets from './mealPeriodPreset';
 import places from './places';
-import uploadMealImage from './uploadMealImage';
 
 const router = Router();
 
@@ -19,6 +18,5 @@ router.use('/record', record);
 router.use('/cuisineTypes', cuisineTypes);
 router.use('/mealPresets', mealPresets);
 router.use('/places', places);
-router.use('/uploadMealImage', uploadMealImage);
 
 export default router;
