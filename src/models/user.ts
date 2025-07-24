@@ -156,10 +156,4 @@ schema.virtual('foodDraws', {
     foreignField: 'userId'
 });
 
-schema.virtual('snacks', {
-    ref: 'SnackRecord',
-    localField: '_id',
-    foreignField: 'userId'
-});
-
 export default model<IUser>('User', schema)

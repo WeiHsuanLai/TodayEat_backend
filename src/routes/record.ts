@@ -3,8 +3,6 @@ import {
     drawFood,
     getTodayFoodDraws,
     getFoodDrawsByDate,
-    addSnack,
-    getSnackHistory,
     getAllFoodDraws
 } from '../controllers/record';
 
@@ -17,8 +15,5 @@ router.post('/food-draw', authMiddleware, drawFood);
 router.get('/food-draw/all', authMiddleware, getAllFoodDraws);
 router.get('/food-draw/today', authMiddleware, getTodayFoodDraws);
 router.get('/food-draw/:date', authMiddleware, getFoodDrawsByDate);
-
-router.post('/snacks', authMiddleware, addSnack);
-router.get('/snacks', authMiddleware, getSnackHistory);
 
 export default router;
