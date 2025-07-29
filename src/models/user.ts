@@ -34,8 +34,16 @@ const schema = new Schema(
         },
         password: {
             type: String,
-            required: [true, '使用者密碼必填'],
-            minlength: [4, '使用者密碼長度不符'],
+            required: function (this: IUser) {
+                return !(this.googleId);
+            },
+            minlength: [4, '密碼長度至少 4 碼'],
+            select: false, // 密碼不會被預設回傳
+        },
+        googleId: {
+            type: String,
+            default: null,
+            select: false,
         },
         email: {
             type: String,
@@ -98,6 +106,7 @@ interface ICartItem {
 
 // 定義使用者介面
 interface IUser extends mongoose.Document {
+    googleId: string;
     account: string;
     password: string;
     email: string;
@@ -111,8 +120,8 @@ interface IUser extends mongoose.Document {
 }
 
 // 密碼加密，自動檢查是否變更，若有變更就進行雜湊加密
-schema.pre<IUser>('save', async function () {
-    if (this.isModified('password')) {
+schema.pre('save', async function (this: IUser) {
+    if (!this.googleId && this.isModified('password')) {
         this.password = await bcrypt.hash(this.password, 10);
     }
 });

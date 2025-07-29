@@ -11,6 +11,7 @@ import { formatUnixTimestamp } from '../utils/formatTime'; // 時間轉換工具
 import { sendResetPasswordEmail } from '../utils/mailer'; // 傳送 emaal
 import LoginLog from '../models/LoginLog'; // 查詢登入登出紀錄
 import { log } from 'console';
+import { OAuth2Client } from 'google-auth-library';
 
 // 檢查帳號重複
 function isMongoServerError(error: unknown): error is { name: string; code: number } {
@@ -285,6 +286,88 @@ export const getCurrentUser = async (req: Request, res: Response) => {
         },
     });
 };
+
+// google 登入
+// 使用 Google OAuth2 驗證
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+export const googleLogin = async (req: Request, res: Response) => {
+    const { token } = req.body;
+
+    try {
+        // 驗證 ID token
+        const ticket = await googleClient.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+
+        const payload = ticket.getPayload();
+        if (!payload) {
+            res.status(401).json({ success: false, message: '驗證失敗' });
+            return;
+        }
+
+        const { email, sub, picture } = payload;
+
+        if (!email || !sub) {
+            res.status(401).json({ success: false, message: '缺少必要的 Google 使用者資訊' });
+            return
+        }
+
+        // 嘗試找出是否已有帳號
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            // 沒有帳號就自動註冊一個
+            user = await User.create({
+                account: email.split('@')[0],
+                email,
+                // password: '', // 不需密碼
+                role: UserRole.USER,
+                googleId: sub,
+                avatar: picture,
+            });
+        }
+
+        // 建立 JWT token
+        const ourToken = jwt.sign(
+            {
+                id: user._id,
+                account: user.account,
+                role: user.role,
+                avatar: user.avatar || '',
+            },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '8h' }
+        );
+
+        user.tokens = [ourToken];
+        user.lastLoginAt = new Date();
+        await user.save();
+
+        await LoginLog.create({
+            userId: user._id,
+            action: 'login',
+            ip: req.ip,
+            userAgent: req.headers['user-agent'] || 'unknown',
+        });
+
+        res.json({
+            success: true,
+            message: 'Google 登入成功',
+            token: ourToken,
+            user: {
+                account: user.account,
+                role: user.role,
+                avatar: user.avatar || '',
+            },
+        });
+
+    } catch (err) {
+        console.error('❌ Google 登入錯誤:', err);
+        res.status(401).json({ success: false, message: 'Google 登入驗證失敗' });
+    }
+};
+
 
 
 // 登出

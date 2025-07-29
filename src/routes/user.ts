@@ -7,6 +7,7 @@ import {
     login,
     deleteAccount,
     getCurrentUser,
+    googleLogin,
 } from '../controllers/user';
 import { body } from 'express-validator';
 import { authMiddleware } from '../middleware/auth';
@@ -32,6 +33,9 @@ router.post(
 
 // 登入
 router.post('/login', login);
+
+// google 登入
+router.post('/googleLogin', googleLogin);
 
 // 檢查token 是否過期
 router.get('/getCurrentUser', authMiddleware, getCurrentUser);
