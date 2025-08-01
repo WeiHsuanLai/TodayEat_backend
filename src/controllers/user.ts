@@ -184,10 +184,11 @@ export const deleteAccount = async (req: Request, res: Response) => {
 
 // 登入
 export const login = async (req: Request, res: Response) => {
+    log('收到的登入請求:', req.body);
     try {
         // 比對帳號
         const { account, password } = req.body;
-        const user = await User.findOne({ account });
+        const user = await User.findOne({ account }).select('+password');
         if (!user) {
             res.status(401).json({ success: false, message: req.t('帳號不存在') });
             log("帳號不存在");
@@ -301,6 +302,7 @@ export const googleLogin = async (req: Request, res: Response) => {
         });
 
         const payload = ticket.getPayload();
+        console.log('📦 Google 使用者資訊:', payload);
         if (!payload) {
             res.status(401).json({ success: false, message: '驗證失敗' });
             return;
