@@ -187,7 +187,7 @@ export const login = async (req: Request, res: Response) => {
     log('收到的登入請求:', req.body);
     try {
         // 比對帳號
-        const { account, password } = req.body;
+        const { account, password, captcha } = req.body;
         const user = await User.findOne({ account }).select('+password');
         if (!user) {
             res.status(401).json({ success: false, message: req.t('帳號不存在') });
@@ -211,6 +211,12 @@ export const login = async (req: Request, res: Response) => {
         if (!isValid) {
             res.status(401).json({ success: false, message: req.t('密碼錯誤') });
             log("密碼錯誤");
+            return;
+        }
+
+        // 檢查驗證碼
+        if (!captcha || captcha.toLowerCase() !== req.session.captcha) {
+            res.status(400).json({ success: false, message: req.t('驗證碼錯誤') });
             return;
         }
 

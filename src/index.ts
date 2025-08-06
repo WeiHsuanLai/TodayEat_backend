@@ -19,6 +19,7 @@ import i18n from 'i18next';
 import { formatUnixTimestamp } from './utils/formatTime';
 import type { TFunction } from 'i18next';
 import apiRoutes from './routes';// 路由整合
+import session from 'express-session';
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -117,6 +118,7 @@ app.use(cors({
       callback(null, false); // ❗ 不要丟 Error
     }
   },
+  credentials: true,
   optionsSuccessStatus: 200 // 🔧 修復舊瀏覽器對 204 的兼容性問題
 }));
 
@@ -124,6 +126,16 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(safeMongoSanitize); // 清除潛在的 MongoDB 查詢語法
 app.use(helmet());
+app.use(session({
+  secret: process.env.SESSION_SECRET! || 'mySecretKey',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 5 * 60 * 1000, // 5 分鐘
+    httpOnly: true,
+    secure: false,
+  }
+}));
 app.use(apiRoutes); //路由整合
 
 // 測試key
