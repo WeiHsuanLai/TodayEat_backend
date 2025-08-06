@@ -100,6 +100,8 @@ app.use((req, res, next) => {
   if (typeof req.t !== 'function') {
     req.t = fallbackT;
   }
+  console.log('💡 req.secure:', req.secure); // 應該是 true
+  console.log('🔐 req.protocol:', req.protocol); // 應該是 https
   next();
 });
 app.use(cors({
