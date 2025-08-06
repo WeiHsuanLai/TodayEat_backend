@@ -217,6 +217,7 @@ export const login = async (req: Request, res: Response) => {
         // 檢查驗證碼
         if (!captcha || captcha.toLowerCase() !== req.session.captcha) {
             res.status(400).json({ success: false, message: req.t('驗證碼錯誤') });
+            console.log('伺服器儲存的驗證碼:', req.session.captcha);
             return;
         }
 
