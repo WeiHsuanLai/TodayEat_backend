@@ -133,7 +133,7 @@ app.use(session({
   cookie: {
     maxAge: 5 * 60 * 1000, // 5 分鐘
     httpOnly: true,
-    secure: false,
+    secure: true,
   }
 }));
 app.use(apiRoutes); //路由整合
