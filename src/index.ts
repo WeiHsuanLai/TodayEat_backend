@@ -126,6 +126,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(safeMongoSanitize); // 清除潛在的 MongoDB 查詢語法
 app.use(helmet());
+app.set('trust proxy', 1);
 app.use(session({
   secret: process.env.SESSION_SECRET! || 'mySecretKey',
   resave: false,
