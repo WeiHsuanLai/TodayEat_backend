@@ -131,9 +131,10 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 5 * 60 * 1000, // 5 分鐘
+    maxAge: 10 * 60 * 1000, // 5 分鐘
     httpOnly: true,
     secure: true,
+    sameSite: 'none',
   }
 }));
 app.use(apiRoutes); //路由整合
