@@ -153,6 +153,14 @@ app.get('/favicon.ico', (req, res) => {
   res.status(204).end(); // 無內容回應，不報錯
 });
 
+// 根目錄路由，用於處理 Render 的健康檢查
+app.get('/', (req, res) => {
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'TodayEat Backend is running!',
+  });
+});
+
 // 以上請求都沒有就進入
 app.use((req, res) => {
   logWarn(`❓ 未知請求：${req.method} ${req.originalUrl}`);
