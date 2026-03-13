@@ -6,6 +6,7 @@ import health from './health';
 import upload from './upload';
 import places from './places';
 import auth from './auth';
+import dishes from './dish';
 
 const router = Router();
 
@@ -15,5 +16,6 @@ router.use('/health', health);
 router.use('/upload', upload);
 router.use('/places', places);
 router.use('/auth', auth);
+router.use('/dishes', dishes);
 
 export default router;

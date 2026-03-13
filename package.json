@@ -7,6 +7,7 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "createAdmin": "ts-node scripts/createAdmin.ts",
+    "seedDishes": "ts-node scripts/seedDishes.ts",
     "postbuild": "cp -r src/locales dist/locales"
   },
   "keywords": [],
