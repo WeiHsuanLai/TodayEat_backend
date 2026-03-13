@@ -15,6 +15,7 @@ import helmet from 'helmet'; // 設定 HTTP 安全標頭
 import cron from 'node-cron'; // 設定排程任務
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import User from './models/user'; // 引入 mongodb 模型
+import { initDefaultDishes } from './utils/initDishes';
 import i18n from 'i18next';
 import { formatUnixTimestamp } from './utils/formatTime';
 import type { TFunction } from 'i18next';
@@ -188,6 +189,9 @@ async function startServer() {
     mongoose.set('sanitizeFilter', true);
     await mongoose.connect(DB_URL);
     log(i18n.t('✅ 資料庫連線成功'));
+
+    // 啟動時自動檢查並初始化菜品資料
+    await initDefaultDishes();
 
     app.listen(PORT, () => {
       log(i18n.t('🚀 伺服器啟動：port', { port: PORT }));
