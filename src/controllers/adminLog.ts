@@ -48,10 +48,20 @@ export const getAllLoginLogs = async (req: Request, res: Response) => {
         // 限制最大回傳筆數，避免過度查詢（上限 500）
         const max = Math.min(Number(limit) || 100, 500);
         // 查詢登入紀錄，依建立時間倒序排列，並帶出 userId 的部分資訊
-        const logs = await LoginLog.find(filter)
+        const rawLogs = await LoginLog.find(filter)
             .populate('userId', 'account email role')
             .sort({ timestamp: sortDirection })
-            .limit(max);
+            .limit(max)
+            .lean();
+
+        // 將 userId 扁平化，讓 account 直接出現在第一層
+        const logs = rawLogs.map(log => ({
+            ...log,
+            account: (log.userId as any)?.account,
+            email: (log.userId as any)?.email,
+            role: (log.userId as any)?.role,
+            userId: (log.userId as any)?._id || log.userId
+        }));
 
         // 成功回傳資料
         res.json({ success: true, logs });

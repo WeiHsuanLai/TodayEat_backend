@@ -19,12 +19,13 @@ export const getCaptcha = (req: Request, res: Response) => {
 
 // 驗證使用者輸入的驗證碼
 export const verifyCaptcha = (req: Request, res: Response) => {
-    const { captcha } = req.body;
+    // 安全檢查 req.body 是否存在
+    const { captcha } = req.body || {};
 
     if (!captcha) {
         res.status(400).json({
             success: false,
-            message: '請輸入驗證碼',
+            message: req.t ? req.t('請輸入驗證碼') : '請輸入驗證碼',
         });
         return;
     }
@@ -34,7 +35,7 @@ export const verifyCaptcha = (req: Request, res: Response) => {
     if (!sessionCaptcha) {
         res.status(400).json({
             success: false,
-            message: '驗證碼已過期或不存在，請重新取得',
+            message: req.t ? req.t('驗證碼已過期或不存在，請重新取得') : '驗證碼已過期或不存在，請重新取得',
         });
         return;
     }
@@ -44,17 +45,19 @@ export const verifyCaptcha = (req: Request, res: Response) => {
     if (!isValid) {
         res.status(400).json({
             success: false,
-            message: '驗證碼錯誤',
+            message: req.t ? req.t('驗證碼錯誤') : '驗證碼錯誤',
         });
         return;
     }
 
     // 通過後刪除，避免重用
-    delete req.session.captcha;
+    if (req.session) {
+        delete req.session.captcha;
+    }
 
     res.status(200).json({
         success: true,
-        message: '驗證成功',
+        message: req.t ? req.t('驗證成功') : '驗證成功',
     });
     return;
 };

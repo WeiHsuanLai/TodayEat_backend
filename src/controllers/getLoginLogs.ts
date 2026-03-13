@@ -19,9 +19,17 @@ export const getLoginLogs = async (req: AuthenticatedRequest, res: Response) => 
             return;
         }
 
-        const logs = await LoginLog.find({ userId })
-            .sort({ createdAt: -1 })
-            .limit(50);
+        const rawLogs = await LoginLog.find({ userId })
+            .populate('userId', 'account')
+            .sort({ timestamp: -1 })
+            .limit(50)
+            .lean();
+
+        const logs = rawLogs.map(log => ({
+            ...log,
+            account: (log.userId as any)?.account,
+            userId: (log.userId as any)?._id || log.userId
+        }));
 
         res.json({ success: true, logs });
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

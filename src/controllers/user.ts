@@ -429,7 +429,7 @@ export const changePassword = async (req: Request, res: Response) => {
         return;
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).select('+password');
     if (!user) {
         res.status(404).json({ success: false, message: req.t('找不到使用者') });
         return;

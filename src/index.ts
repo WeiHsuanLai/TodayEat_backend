@@ -134,10 +134,10 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 10 * 60 * 1000, // 5 分鐘
+    maxAge: 10 * 60 * 1000, // 10 分鐘
     httpOnly: true,
-    secure: true,
-    sameSite: 'none',
+    secure: process.env.NODE_ENV === 'production', // 僅在生產環境使用 https
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   }
 }));
 app.use(apiRoutes); //路由整合
