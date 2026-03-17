@@ -37,5 +37,14 @@
     "登入已失效": "Login session has expired.",
     "此 token 已被取代，請重新登入": "This token has been superseded. Please log in again.",
     "token 已過期，請重新登入": "Token has expired. Please log in again.",
-    "token 驗證失敗": "Token verification failed."
+    "token 驗證失敗": "Token verification failed.",
+
+    "台式": "Taiwanese",
+    "日式": "Japanese",
+    "美式": "American",
+    "中式": "Chinese",
+    "義式": "Italian",
+    "韓式": "Korean",
+    "泰式": "Thai",
+    "其他": "Other"
 }

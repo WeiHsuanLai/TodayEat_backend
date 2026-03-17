@@ -7,6 +7,7 @@ import upload from './upload';
 import places from './places';
 import auth from './auth';
 import dishes from './dish';
+import foodRecords from './foodRecord';
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use('/upload', upload);
 router.use('/places', places);
 router.use('/auth', auth);
 router.use('/dishes', dishes);
+router.use('/food-records', foodRecords);
 
 export default router;

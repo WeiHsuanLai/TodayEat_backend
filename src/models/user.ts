@@ -147,8 +147,8 @@ schema.virtual('cartQuantity').get(function () {
     }, 0)
 })
 
-schema.virtual('foodDraws', {
-    ref: 'FoodDrawRecord',
+schema.virtual('foodRecords', {
+    ref: 'FoodRecord',
     localField: '_id',
     foreignField: 'userId'
 });
