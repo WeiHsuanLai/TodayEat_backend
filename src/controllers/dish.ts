@@ -8,7 +8,11 @@ export const getDishes = async (req: Request, res: Response) => {
         const query: any = {};
         
         if (category) {
-            query.category = category;
+            // 同時檢查 zh 與 en 分類
+            query.$or = [
+                { 'category.zh': category },
+                { 'category.en': category }
+            ];
         }
 
         console.log('🔍 [getDishes] 查詢條件:', query);
@@ -17,13 +21,13 @@ export const getDishes = async (req: Request, res: Response) => {
 
         const lang = (req.language || 'zh') as 'zh' | 'en';
 
-        // 根據語系回傳對應的名稱，並使用 i18n 翻譯分類
+        // 根據語系回傳對應的名稱與分類
         const translatedDishes = dishes.map(dish => {
             const dishObj = dish.toObject();
             return {
                 ...dishObj,
                 name: dish.name[lang] || dish.name.zh, // 優先返回對應語系，若無則回傳中文
-                category: req.t(dish.category)
+                category: dish.category[lang] || dish.category.zh
             };
         });
 
@@ -42,13 +46,22 @@ export const getDishes = async (req: Request, res: Response) => {
 
 export const getCategories = async (req: Request, res: Response) => {
     try {
+        const lang = (req.language || 'zh') as 'zh' | 'en';
+        
         // 從 Mongoose Schema 的 enum 中取得分類定義
-        const categories = Dish.schema.path('category').options.enum;
+        const zhCategories = (Dish.schema.path('category.zh') as any).options.enum;
+        const enCategories = (Dish.schema.path('category.en') as any).options.enum;
 
-        // 回傳翻譯後的分類列表
-        const translatedCategories = categories.map((cat: string) => ({
-            key: cat,
-            label: req.t(cat)
+        // 合併為物件陣列，包含 key (用於查詢) 與 label (用於顯示)
+        const categories = zhCategories.map((zh: string, index: number) => ({
+            zh: zh,
+            en: enCategories[index] || 'Other',
+        }));
+
+        // 回傳對應語系的分類列表
+        const translatedCategories = categories.map((cat: any) => ({
+            key: cat[lang] || cat.zh,
+            label: cat[lang] || cat.zh
         }));
 
         res.status(StatusCodes.OK).json({

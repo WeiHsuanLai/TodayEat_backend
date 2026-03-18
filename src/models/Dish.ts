@@ -5,7 +5,10 @@ export interface IDish extends Document {
         zh: string;
         en: string;
     };
-    category: string;
+    category: {
+        zh: string;
+        en: string;
+    };
     image?: string;
 }
 
@@ -23,10 +26,18 @@ const dishSchema: Schema = new Schema({
         }
     },
     category: {
-        type: String,
-        required: [true, '分類為必填'],
-        enum: ['台式', '日式', '美式', '中式', '義式', '韓式', '泰式', '其他'],
-        default: '其他',
+        zh: {
+            type: String,
+            required: [true, '中文分類為必填'],
+            enum: ['台式', '日式', '美式', '中式', '義式', '韓式', '泰式', '其他'],
+            default: '其他',
+        },
+        en: {
+            type: String,
+            required: [true, '英文分類為必填'],
+            enum: ['Taiwanese', 'Japanese', 'American', 'Chinese', 'Italian', 'Korean', 'Thai', 'Other'],
+            default: 'Other',
+        }
     },
     image: {
         type: String,

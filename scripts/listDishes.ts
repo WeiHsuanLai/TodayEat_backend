@@ -18,7 +18,9 @@ async function listDishes() {
         
         console.log('--- 目前資料庫中的菜品清單 ---');
         dishes.forEach(dish => {
-            console.log(`ID: ${dish._id} | 名稱: ${dish.name} | 分類: ${dish.category}`);
+            const name = `${dish.name.zh} (${dish.name.en})`;
+            const category = `${dish.category.zh} (${dish.category.en})`;
+            console.log(`ID: ${dish._id} | 名稱: ${name} | 分類: ${category}`);
         });
         console.log(`--- 共計 ${dishes.length} 項菜品 ---`);
 
