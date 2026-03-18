@@ -247,6 +247,7 @@ export const login = async (req: Request, res: Response) => {
             token,
             iat: iatFormatted,
             exp: expFormatted,
+            loginType: 'normal',
             user: {
                 account: user.account,
                 role: user.role,
@@ -353,6 +354,10 @@ export const googleLogin = async (req: Request, res: Response) => {
         user.lastLoginAt = new Date();
         await user.save();
 
+        const decoded = jwt.decode(ourToken) as JwtPayload;
+        const iatFormatted = formatUnixTimestamp(decoded.iat);
+        const expFormatted = formatUnixTimestamp(decoded.exp);
+
         await LoginLog.create({
             userId: user._id,
             action: 'login',
@@ -364,10 +369,14 @@ export const googleLogin = async (req: Request, res: Response) => {
             success: true,
             message: 'Google 登入成功',
             token: ourToken,
+            iat: iatFormatted,
+            exp: expFormatted,
+            loginType: 'google',
             user: {
                 account: user.account,
                 role: user.role,
                 avatar: user.avatar || '',
+                token: ourToken,
             },
         });
 
