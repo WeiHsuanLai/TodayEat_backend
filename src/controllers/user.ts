@@ -288,7 +288,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
     res.json({
         success: true,
         user: {
-            username: user.account,
+            account: user.account,
             role: user.role,
             avatar: user.avatar || '',
             token: req.headers.authorization?.split(' ')[1],
