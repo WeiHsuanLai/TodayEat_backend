@@ -1,5 +1,6 @@
 import LoginLog from "../models/LoginLog";
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 
 interface AuthenticatedRequest extends Request {
     user?: {
@@ -8,6 +9,11 @@ interface AuthenticatedRequest extends Request {
         role: number;
         avatar: string;
     };
+}
+
+interface PopulatedUser {
+    _id: mongoose.Types.ObjectId;
+    account: string;
 }
 
 export const getLoginLogs = async (req: AuthenticatedRequest, res: Response) => {
@@ -25,11 +31,14 @@ export const getLoginLogs = async (req: AuthenticatedRequest, res: Response) => 
             .limit(50)
             .lean();
 
-        const logs = rawLogs.map(log => ({
-            ...log,
-            account: (log.userId as any)?.account,
-            userId: (log.userId as any)?._id || log.userId
-        }));
+        const logs = rawLogs.map(log => {
+            const user = log.userId as unknown as PopulatedUser;
+            return {
+                ...log,
+                account: user?.account,
+                userId: user?._id || log.userId
+            };
+        });
 
         res.json({ success: true, logs });
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

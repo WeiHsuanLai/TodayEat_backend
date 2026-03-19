@@ -41,8 +41,19 @@ export const uploadToCloudinary = (req: Request, res: Response) => {
                 log('🆔 使用者 ID:', req.user?.id);
 
                 try {
+                    // 1. 取得目前使用者，確認是否有舊的 avatarPublicId
+                    const user = await User.findById(req.user!.id);
+                    
+                    if (user && user.avatarPublicId) {
+                        log(`🗑️ 正在刪除舊圖片：${user.avatarPublicId}`);
+                        // 2. 刪除 Cloudinary 上的舊圖片
+                        await cloudinary.uploader.destroy(user.avatarPublicId);
+                    }
+
+                    // 3. 更新資料庫（同時儲存 URL 與 Public ID）
                     await User.findByIdAndUpdate(req.user!.id, {
                         avatar: result.secure_url,
+                        avatarPublicId: result.public_id,
                     });
 
                     res.json({
@@ -50,8 +61,8 @@ export const uploadToCloudinary = (req: Request, res: Response) => {
                         public_id: result.public_id,
                     });
                 } catch (dbError) {
-                    logError('❌ 更新使用者頭像失敗', dbError);
-                    res.status(500).json({ error: '圖片上傳成功但更新頭像失敗' });
+                    logError('❌ 處理大頭貼更新流程失敗', dbError);
+                    res.status(500).json({ error: '圖片處理異常' });
                 }
             },
         );
@@ -61,5 +72,4 @@ export const uploadToCloudinary = (req: Request, res: Response) => {
         logError('❌ 上傳流程異常', err);
         res.status(500).json({ error: '圖片處理異常' });
     }
-
 };

@@ -1,6 +1,14 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const schema = new Schema({
+export interface ILoginLog extends Document {
+    userId: mongoose.Types.ObjectId | Record<string, unknown>;
+    action: 'login' | 'logout';
+    timestamp: Date;
+    ip?: string;
+    userAgent?: string;
+}
+
+const schema = new Schema<ILoginLog>({
     userId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -21,4 +29,4 @@ const schema = new Schema({
     versionKey: false
 });
 
-export default mongoose.model('LoginLog', schema, 'login_logs');
+export default mongoose.model<ILoginLog>('LoginLog', schema, 'login_logs');

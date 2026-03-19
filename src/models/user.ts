@@ -63,6 +63,10 @@ const schema = new Schema(
             type: String,
             default: 'https://api.dicebear.com/7.x/avataaars/svg?seed=${username}',
         },
+        avatarPublicId: {
+            type: String,
+            default: null,
+        },
         cart: {
             type: [cartSchema]
         },
@@ -112,6 +116,7 @@ interface IUser extends mongoose.Document {
     email: string;
     tokens: string[];
     avatar?: string;
+    avatarPublicId?: string;
     cart: ICartItem[];
     role: number;
     lastLoginAt?: Date;

@@ -1,6 +1,15 @@
 import { Request, Response } from 'express';
 import LoginLog from '../models/LoginLog';
+import VisitorLog from '../models/VisitorLog';
 import '../models/user';
+import mongoose from 'mongoose';
+
+interface PopulatedUser {
+    _id: mongoose.Types.ObjectId;
+    account: string;
+    email: string;
+    role: number;
+}
 
 export const getAllLoginLogs = async (req: Request, res: Response) => {
     try {
@@ -55,13 +64,16 @@ export const getAllLoginLogs = async (req: Request, res: Response) => {
             .lean();
 
         // 將 userId 扁平化，讓 account 直接出現在第一層
-        const logs = rawLogs.map(log => ({
-            ...log,
-            account: (log.userId as any)?.account,
-            email: (log.userId as any)?.email,
-            role: (log.userId as any)?.role,
-            userId: (log.userId as any)?._id || log.userId
-        }));
+        const logs = rawLogs.map(log => {
+            const user = log.userId as unknown as PopulatedUser;
+            return {
+                ...log,
+                account: user?.account,
+                email: user?.email,
+                role: user?.role,
+                userId: user?._id || log.userId
+            };
+        });
 
         // 成功回傳資料
         res.json({ success: true, logs });
@@ -70,6 +82,34 @@ export const getAllLoginLogs = async (req: Request, res: Response) => {
         res.status(500).json({
             success: false,
             message: '無法取得登入紀錄',
+            error: err instanceof Error ? err.message : String(err),
+        });
+    }
+};
+
+/**
+ * 取得公開統計資訊，如今日訪客計數
+ */
+export const getPublicStats = async (_req: Request, res: Response) => {
+    try {
+        // 取得今日凌晨 00:00 的時間
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        // 僅統計今日的紀錄
+        const count = await VisitorLog.countDocuments({
+            timestamp: { $gte: startOfToday }
+        });
+
+        res.json({
+            success: true,
+            visitorCount: count,
+        });
+    } catch (err) {
+        console.error('[getPublicStats 錯誤]', err);
+        res.status(500).json({
+            success: false,
+            message: '無法取得統計資訊',
             error: err instanceof Error ? err.message : String(err),
         });
     }

@@ -21,6 +21,7 @@ import { formatUnixTimestamp } from './utils/formatTime';
 import type { TFunction } from 'i18next';
 import apiRoutes from './routes';// 路由整合
 import session from 'express-session';
+import VisitorLog from './models/VisitorLog';
 
 const app = express();
 const safeMongoSanitize: RequestHandler = (req, res, next) => {
@@ -139,11 +140,58 @@ app.use(session({
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production', // 僅在生產環境使用 https
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  }
-}));
-app.use(apiRoutes); //路由整合
+    }
+    }));
 
-// 測試key
+    // 訪客追蹤中介層：記錄不重複 IP（包含未登入訪客與登入會員）
+    app.use(async (req, res, next) => {
+    // 縮小排除範圍，僅排除統計路徑與靜態圖示，其餘（如菜單 /dishes, /places 等）皆計入訪客流量
+    const excludedPaths = ['/favicon.ico', '/health', '/health/visitor-count', '/test'];
+    if (excludedPaths.includes(req.path)) {
+      return next();
+    }
+
+    try {
+      const rawIp = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      const ip = Array.isArray(rawIp) ? rawIp[0] : rawIp || 'unknown';
+      const userAgent = req.headers['user-agent'];
+
+      // 嘗試從 Session 或 JWT 中取得使用者 ID（如果有登入的話）
+      const userId = (req.session as any)?.userId || (req.user as any)?.id || null;
+
+      // 檢查該 IP 在過去 1 小時內是否已經記錄過
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const existingLog = await VisitorLog.findOne({
+        ip,
+        timestamp: { $gte: oneHourAgo }
+      });
+
+      // 如果 1 小時內沒紀錄，則新增一筆紀錄
+      if (!existingLog) {
+        await VisitorLog.create({
+          ip,
+          userAgent,
+          userId // 若為 null 則代表為未登入訪客
+        });
+
+        // 取得今日凌晨 00:00 的時間
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
+        // 計算今日總訪客數
+        const todayCount = await VisitorLog.countDocuments({
+          timestamp: { $gte: startOfToday }
+        });
+
+        log(`[訪客紀錄] 新訪客進入，IP: ${ip}，今日累計訪客數: ${todayCount}`);
+      }
+    } catch (err) {
+      console.error('[Visitor Log Error]', err);
+    }
+    next();
+    });
+
+    app.use(apiRoutes); //路由整合// 測試key
 app.get('/test', (req, res) => {
   res.send(req.t('測試鑰匙'));
   log(req.t("測試成功"));
@@ -194,7 +242,7 @@ async function startServer() {
   }
 
   try {
-    mongoose.set('sanitizeFilter', true);
+    mongoose.set('sanitizeFilter', false);
     await mongoose.connect(DB_URL);
     log(i18n.t('✅ 資料庫連線成功'));
 

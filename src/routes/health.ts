@@ -1,6 +1,7 @@
 // routes/health.ts
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { getPublicStats } from '../controllers/adminLog';
 
 const router = Router();
 
@@ -12,5 +13,7 @@ router.get('/', (req, res) => {
         timestamp: new Date().toISOString(),
     });
 });
+
+router.get('/visitor-count', getPublicStats);
 
 export default router;
